@@ -6,7 +6,7 @@
 {% load static %}
 <div class="container py-5">
     <h1>Лента записей</h1>                        
-    {% for post in posts %}
+    {% for post in posts|dictsortreversed:"id" %}
     <hr>
     <article>
       <ul>
@@ -18,6 +18,9 @@
         </li>
         <li>
           Категория: <a href="{% url 'blog:category_posts' post.category %}">{{ post.category }}</a>
+        </li>
+        <li>
+          Идентификатор: <a href="{% url 'blog:category_posts' post.id %}">{{ post.id }}</a>
         </li>
       </ul>
       <p>
