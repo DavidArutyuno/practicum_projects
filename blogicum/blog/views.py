@@ -43,6 +43,8 @@ posts = [
     },
 ]
 
+list.reverse(posts)
+
 
 def index(request):
     template = 'blog/index.html'
@@ -59,5 +61,4 @@ def post_detail(request, id):
 def category_posts(request, category_slug):
     template = 'blog/category.html'
     context = {'category': category_slug}
-    print(category_slug)
     return render(request, template, context)
