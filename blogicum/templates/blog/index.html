@@ -19,9 +19,6 @@
         <li>
           Категория: <a href="{% url 'blog:category_posts' post.category %}">{{ post.category }}</a>
         </li>
-        <li>
-          Идентификатор: <a href="{% url 'blog:category_posts' post.id %}">{{ post.id }}</a>
-        </li>
       </ul>
       <p>
         {{ post.text|truncatewords:10 }}
