@@ -49,15 +49,15 @@ Dev<br>
 
 3. Установите зависимости проекта:
 
-    pip install -r requirements.txt
+        pip install -r requirements.txt
 
 4. Перейдите в директорию с файлом **manage.py** и примените миграции:
 
-    python manage.py migrate
+        python manage.py migrate
 
 5. Запустите сервер разработки (виртуальное окружение должно быть активно):
 
-    python manage.py runserver
+        python manage.py runserver
 
 6. Откройте [ссылку](http://127.0.0.1:8000/) в любом браузере и насладитесь успехом
 
