@@ -9,17 +9,7 @@
     {% for post in posts|dictsortreversed:"id" %}
     <hr>
     <article>
-      <ul>
-        <li>
-          Место: {{ post.location }}             
-        </li>
-        <li>
-          Дата: {{ post.date }}
-        </li>
-        <li>
-          Категория: <a href="{% url 'blog:category_posts' post.category %}">{{ post.category }}</a>
-        </li>
-      </ul>
+      {% include "includes/article_ul.html" %}
       <p>
         {{ post.text|truncatewords:10 }}
       </p>
