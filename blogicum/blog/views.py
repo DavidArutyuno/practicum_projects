@@ -6,7 +6,10 @@ from django.shortcuts import get_object_or_404, get_list_or_404, render
 
 
 def index(request):
-    post_list = Post.objects.select_related('category', 'location', 'author').filter(
+    post_list = Post.objects.select_related(
+        'category',
+        'location',
+        'author').filter(
         is_published=True,
         category__is_published=True,
         pub_date__lte=dt.now()

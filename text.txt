@@ -1,0 +1,28 @@
+WARNING: Running pip as the 'root' user can result in broken permissions and 
+conflicting behaviour with the system package manager, possibly rendering your 
+system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. 
+Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+
+WARNING: Running pip as the 'root' user can result in broken permissions and 
+conflicting behaviour with the system package manager, possibly rendering your 
+system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. 
+Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) 
+after connection broken by 'ReadTimeoutError("HTTPSConnectionPool(host='files.pythonhosted.org', port=443): Read timed out. 
+(read timeout=15)")': /packages/d9/42/65004373ac4617464f35ed15931b30d764f53cdd30cc78d5aea349c8c050/flake8-7.1.1-py2.py3-none-any.whl.metadata
+
+
+WARNING: Running pip as the 'root' user can result in broken permissions and 
+conflicting behaviour with the system package manager, possibly rendering your 
+system unusable.It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. 
+Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+./blogicum/blog/tests.py:1:1: F401 'django.test.TestCase' imported but unused
+./blogicum/blog/views.py:9:80: E501 line too long (85 > 79 characters)
+./blogicum/pages/admin.py:1:1: F401 'django.contrib.admin' imported but unused
+./blogicum/pages/models.py:1:1: F401 'django.db.models' imported but unused
+./blogicum/pages/tests.py:1:1: F401 'django.test.TestCase' imported but unused
+================== Приведите код в соответствие с PEP8 ==================
