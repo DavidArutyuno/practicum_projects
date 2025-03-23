@@ -1,3 +1,8 @@
+env
+django-sprint3
+db.json
+desktop.ini
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
