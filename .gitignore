@@ -1,6 +1,8 @@
 env
 django-sprint3
 desktop.ini
+вырезал/
+text.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -150,4 +152,4 @@ dmypy.json
 .mypy_cache
 
 # папки со статикой и медиа
-media/
+media/вырезал

@@ -31,7 +31,8 @@ class Category(PublishedModel):
 class Location(PublishedModel):
     """Географическая метка."""
 
-    name = models.CharField(max_length=s.MAX_LENGTH, verbose_name='Название места')
+    name = models.CharField(max_length=s.MAX_LENGTH,
+                            verbose_name='Название места')
 
     class Meta:
         verbose_name = 'местоположение'
