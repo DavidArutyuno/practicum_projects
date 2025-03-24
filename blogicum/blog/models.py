@@ -1,5 +1,6 @@
-from django.contrib.auth import get_user_model
+from blogicum import settings as s
 
+from django.contrib.auth import get_user_model
 from django.db import models
 
 from core.models import PublishedModel
@@ -8,34 +9,36 @@ from core.models import PublishedModel
 class Category(PublishedModel):
     """Тематическая категория."""
 
-    title = models.CharField(max_length=256, verbose_name='Заголовок')
+    title = models.CharField(max_length=s.MAX_LENGTH, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
         max_length=64,
         unique=True,
         verbose_name='Идентификатор',
-        help_text='Идентификатор страницы для URL; разрешены символы латиницы,'
-        ' цифры, дефис и подчёркивание.')
+        help_text=(
+            'Идентификатор страницы для URL; разрешены символы латиницы, '
+            'цифры, дефис и подчёркивание.')
+    )
 
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.title
+        return self.title[:15]
 
 
 class Location(PublishedModel):
     """Географическая метка."""
 
-    name = models.CharField(max_length=256, verbose_name='Название места')
+    name = models.CharField(max_length=s.MAX_LENGTH, verbose_name='Название места')
 
     class Meta:
         verbose_name = 'местоположение'
         verbose_name_plural = 'Местоположения'
 
     def __str__(self):
-        return self.name
+        return self.name[:15]
 
 
 User = get_user_model()
@@ -48,13 +51,15 @@ class Post(PublishedModel):
     Главное в блоге — это публикация («пост»), вокруг неё всё и строится.
     """
 
-    title = models.CharField(max_length=256, verbose_name='Заголовок')
+    title = models.CharField(max_length=s.MAX_LENGTH, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         auto_now_add=False,
         verbose_name='Дата и время публикации',
-        help_text='Если установить дату и время в будущем — можно делать'
-        ' отложенные публикации.')
+        help_text=(
+            'Если установить дату и время в будущем — можно делать '
+            'отложенные публикации.')
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -84,4 +89,4 @@ class Post(PublishedModel):
         ordering = ('-pk',)
 
     def __str__(self):
-        return self.title
+        return self.title[:15]

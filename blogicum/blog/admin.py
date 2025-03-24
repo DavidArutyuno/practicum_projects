@@ -29,10 +29,7 @@ class PostAdmin(admin.ModelAdmin):
     search_fields = ('title',)
     list_filter = ('category',)
     list_display_links = ('title',)
-    # Вместо пустого значения будет выводиться строка "Не задано".
     empty_value_display = 'Не задано'
-    # Указываем, для каких связанных моделей нужно включить такой интерфейс:
-    # filter_horizontal = ('category',)
 
 
 admin.site.register(Post, PostAdmin)

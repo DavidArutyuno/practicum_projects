@@ -18,6 +18,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Адреса папок с шаблонами
 TEMPLATES_DIR = BASE_DIR / 'templates'
 
+# Для переиспользования при описании полей моделей
+MAX_LENGTH = 256
+
 # Дополнительные директории, где собраны статические файлы проекта.
 STATICFILES_DIRS = [
     BASE_DIR / 'static_dev',
