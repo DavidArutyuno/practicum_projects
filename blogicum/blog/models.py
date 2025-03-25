@@ -8,7 +8,10 @@ from core.models import PublishedModel
 class Category(PublishedModel):
     """Тематическая категория."""
 
-    title = models.CharField(max_length=s.MAX_LENGTH_CHAR, verbose_name='Заголовок')
+    title = models.CharField(
+        max_length=s.MAX_LENGTH_CHAR,
+        verbose_name='Заголовок'
+    )
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
         max_length=s.MAX_LENGTH_SLUG,
@@ -30,8 +33,10 @@ class Category(PublishedModel):
 class Location(PublishedModel):
     """Географическая метка."""
 
-    name = models.CharField(max_length=s.MAX_LENGTH_CHAR,
-                            verbose_name='Название места')
+    name = models.CharField(
+        max_length=s.MAX_LENGTH_CHAR,
+        verbose_name='Название места'
+    )
 
     class Meta:
         verbose_name = 'местоположение'
@@ -51,14 +56,18 @@ class Post(PublishedModel):
     Главное в блоге — это публикация («пост»), вокруг неё всё и строится.
     """
 
-    title = models.CharField(max_length=s.MAX_LENGTH_CHAR, verbose_name='Заголовок')
+    title = models.CharField(
+        max_length=s.MAX_LENGTH_CHAR,
+        verbose_name='Заголовок'
+    )
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         auto_now_add=False,
         verbose_name='Дата и время публикации',
         help_text=(
             'Если установить дату и время в будущем — можно делать '
-            'отложенные публикации.')
+            'отложенные публикации.'
+        )
     )
     author = models.ForeignKey(
         User,
