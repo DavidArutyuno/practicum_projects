@@ -19,7 +19,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / 'templates'
 
 # Для переиспользования при описании полей моделей
-MAX_LENGTH = 256
+MAX_LENGTH_CHAR = 256
+MAX_LENGTH_SLUG = 64
+RIGHT_TRIM = 15
 
 # Дополнительные директории, где собраны статические файлы проекта.
 STATICFILES_DIRS = [

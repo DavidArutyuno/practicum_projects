@@ -1,18 +1,17 @@
-from blogicum import settings as s
-
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from blogicum import settings as s
 from core.models import PublishedModel
 
 
 class Category(PublishedModel):
     """Тематическая категория."""
 
-    title = models.CharField(max_length=s.MAX_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(max_length=s.MAX_LENGTH_CHAR, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
-        max_length=64,
+        max_length=s.MAX_LENGTH_SLUG,
         unique=True,
         verbose_name='Идентификатор',
         help_text=(
@@ -25,13 +24,13 @@ class Category(PublishedModel):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.title[:15]
+        return self.title[:s.RIGHT_TRIM]
 
 
 class Location(PublishedModel):
     """Географическая метка."""
 
-    name = models.CharField(max_length=s.MAX_LENGTH,
+    name = models.CharField(max_length=s.MAX_LENGTH_CHAR,
                             verbose_name='Название места')
 
     class Meta:
@@ -39,7 +38,7 @@ class Location(PublishedModel):
         verbose_name_plural = 'Местоположения'
 
     def __str__(self):
-        return self.name[:15]
+        return self.name[:s.RIGHT_TRIM]
 
 
 User = get_user_model()
@@ -52,7 +51,7 @@ class Post(PublishedModel):
     Главное в блоге — это публикация («пост»), вокруг неё всё и строится.
     """
 
-    title = models.CharField(max_length=s.MAX_LENGTH, verbose_name='Заголовок')
+    title = models.CharField(max_length=s.MAX_LENGTH_CHAR, verbose_name='Заголовок')
     text = models.TextField(verbose_name='Текст')
     pub_date = models.DateTimeField(
         auto_now_add=False,
@@ -90,4 +89,4 @@ class Post(PublishedModel):
         ordering = ('-pk',)
 
     def __str__(self):
-        return self.title[:15]
+        return self.title[:s.RIGHT_TRIM]
