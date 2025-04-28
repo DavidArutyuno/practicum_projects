@@ -10,9 +10,7 @@ class UserForm(forms.ModelForm):
         fields = ('username', 'first_name', 'last_name', 'email')
 
     def __init__(self, *args, **kwargs):
-        """
-        Обновление стилей формы под bootstrap
-        """
+        """Обновление стилей формы под bootstrap."""
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs.update({
@@ -21,13 +19,11 @@ class UserForm(forms.ModelForm):
             })
 
     def clean_email(self):
-        """
-        Проверка email на уникальность
-        """
+        """Проверка email на уникальность."""
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
-        if (email and
-                User.objects.filter(email=email).exclude(
+        if (email
+                and User.objects.filter(email=email).exclude(
                     username=username).exists()):
             raise forms.ValidationError('Email адрес должен быть уникальным')
         return email
@@ -53,6 +49,6 @@ class CommentForm(forms.ModelForm):
         fields = ('text',)
         widgets = {
             'text': forms.Textarea(
-                attrs={'rows': 4, 'placeholder': 'Ваш комментарий:'}
+                attrs={'rows': 4, 'placeholder': 'Текст:'}
             )
         }
