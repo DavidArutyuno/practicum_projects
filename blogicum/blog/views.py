@@ -1,10 +1,8 @@
-from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.shortcuts import (
-    get_object_or_404, get_list_or_404, render, redirect
+    get_object_or_404, redirect
 )
-from django.urls import reverse_lazy, reverse
-from django.utils import timezone as dt
+from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView
 )
@@ -63,9 +61,6 @@ class ProfilePostListView(PostMixin, ListView):
             User,
             username=self.kwargs['username']
         )
-        # context['page_obj'] = (
-        #     self.get_queryset()
-        # )
         return context
 
 

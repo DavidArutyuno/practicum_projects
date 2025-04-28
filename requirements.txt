@@ -28,3 +28,4 @@ soupsieve==2.6
 sqlparse==0.5.2
 tomli==2.1.0
 yapf==0.43.0
+django-debug-toolbar==5.1.0
