@@ -1,10 +1,9 @@
+from django.conf import settings as s
 from django.contrib.auth import get_user_model
 from django.db import models
-# Импортируем функцию reverse() для получения ссылки на объект.
 from django.urls import reverse
 from django.utils import timezone as dt
 
-from blogicum import settings as s
 from core.models import PublishedModel
 
 
@@ -96,7 +95,6 @@ class Post(PublishedModel):
         on_delete=models.SET_NULL,
         related_name='posts',
         null=True,
-        # blank=False,
         verbose_name='Категория'
     )
     image = models.ImageField('Изображение', upload_to='posts/', blank=True)
@@ -108,7 +106,6 @@ class Post(PublishedModel):
         default_related_name = 'posts'
 
     def get_absolute_url(self):
-        # С помощью функции reverse() возвращаем URL объекта.
         return reverse('blog:post_detail', kwargs={'pk': self.pk})
 
     def __str__(self):
@@ -123,8 +120,8 @@ class Comment(models.Model):
         Post,
         on_delete=models.SET_NULL,
         null=True,
-        related_name='post_comments',
-        verbose_name='Комментарий'
+        related_name='comments',
+        verbose_name='Пост'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -133,8 +130,8 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name='Автор комментария',
-        related_name='comments'
+        related_name='comments',
+        verbose_name='Автор комментария'
     )
 
     class Meta:
@@ -142,8 +139,5 @@ class Comment(models.Model):
         verbose_name_plural = 'Комментарии'
         ordering = ('created_at',)
 
-    # def get_absolute_url(self):
-    #     return reverse('blog:post_detail', kwargs={'pk': self.pk})
-
     def __str__(self):
-        return self.text
+        return self.text[:s.RIGHT_TRIM]

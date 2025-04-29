@@ -1,6 +1,6 @@
 from django import forms
 
-# Импортируем класс модели User.
+
 from .models import Post, User, Comment
 
 
@@ -18,7 +18,7 @@ class UserForm(forms.ModelForm):
                 'autocomplete': 'off'
             })
 
-    def clean_email(self):
+    def clean(self):
         """Проверка email на уникальность."""
         email = self.cleaned_data.get('email')
         username = self.cleaned_data.get('username')
@@ -26,7 +26,6 @@ class UserForm(forms.ModelForm):
                 and User.objects.filter(email=email).exclude(
                     username=username).exists()):
             raise forms.ValidationError('Email адрес должен быть уникальным')
-        return email
 
 
 class PostForm(forms.ModelForm):

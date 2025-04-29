@@ -9,7 +9,7 @@ def get_posts():
     return Post.objects.select_related(
         'category', 'location', 'author',
     ).annotate(
-        comment_count=Count('post_comments')
+        comment_count=Count('comments')
     ).order_by('-pub_date')
 
 
