@@ -18,7 +18,6 @@ from news.pytest_tests import settings as s
         (s.USERS_SIGNUP, None),
     ),
 )
-
 def test_pages_availability_for_anonymous_user(client, name, args):
     """Анониму доступны страницы."""
     url = reverse(name, args=args)
