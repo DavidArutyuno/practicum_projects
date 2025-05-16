@@ -1,9 +1,16 @@
+from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views import generic
 
 from .forms import NoteForm
 from .models import Note
+
+
+def user_logout(request):
+    logout(request)
+    return render(request, 'registration/logout.html')
 
 
 class Home(generic.TemplateView):

@@ -1,11 +1,17 @@
 from django.conf import settings
+from django.contrib.auth import logout
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.urls import reverse
 from django.views import generic
 
 from .forms import CommentForm
 from .models import Comment, News
+
+
+def user_logout(request):
+    logout(request)
+    return render(request, 'registration/logout.html')
 
 
 class NewsList(generic.ListView):
