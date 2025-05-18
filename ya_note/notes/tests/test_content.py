@@ -1,40 +1,38 @@
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client
 from django.urls import reverse
 
 from notes.forms import NoteForm
 from notes.models import Note
+from notes.tests.settings import ClassTestMixin
 
 
 User = get_user_model()
 
 
-class TestListNotes(TestCase):
+class TestListNotes(ClassTestMixin):
     """Тесты отображения заметок на страницах."""
-
-    LIST_NOTES_URL = reverse('notes:list')
 
     @classmethod
     def setUpTestData(cls):
-        """Фикстуры для класса."""
-        cls.authors = []
-        cls.authors.append(User.objects.create(username='David'))
-        cls.authors.append(User.objects.create(username='LeeSu'))
-        cls.url_detail_slug = f'{cls.authors[0]}-slug-0'
+        """Фикстуры для тестирования."""
+        super().setUpTestData()
+        cls.users = []
+        cls.users.append(cls.author)
+        cls.users.append(cls.reader)
+        cls.assert_detail_slug = f'{cls.users[0]}-slug-0'
 
-        # Создаём объект клиента.
-        cls.author_1_client = Client()
-        cls.author_2_client = Client()
+        cls.author_client = Client()
 
-        for cls_author in cls.authors:
+        for user in cls.users:
             Note.objects.bulk_create(
                 Note(
-                    title=f'Заметка {index} от автора {cls_author}',
-                    text=f'Просто текст {index} от автора {cls_author}',
-                    slug=f'{cls_author}-slug-{index}',
-                    author=cls_author
+                    title=f'Заметка {index} от автора {user}',
+                    text=f'Просто текст {index} от автора {user}',
+                    slug=f'{user}-slug-{index}',
+                    author=user
                 )
-                for index in range(5)
+                for index in range(cls.COUNT_NOTES)
             )
 
     def test_detail_note_in_object_list(self):
@@ -44,15 +42,15 @@ class TestListNotes(TestCase):
         Отдельная заметка передаётся на страницу со списком заметок
         в списке object_list в словаре context.
         """
-        self.client.force_login(self.authors[0])
-        response = self.client.get(self.LIST_NOTES_URL)
+        self.client.force_login(self.users[0])
+        response = self.client.get(self.URL_NOTES_LIST)
         self.assertIn('object_list', response.context)
 
         notes = response.context['object_list']
-        all_slugs = []
+        slugs = []
         for note in notes:
-            all_slugs.append(note.slug)
-        self.assertIn(self.url_detail_slug, all_slugs)
+            slugs.append(note.slug)
+        self.assertIn(self.assert_detail_slug, slugs)
 
     def test_note_different_authors(self):
         """
@@ -60,29 +58,24 @@ class TestListNotes(TestCase):
 
         В список заметок одного пользователя
         не попадают заметки другого пользователя.
+
+        Проверяется количество тестовых заметок: ожидается 5.
+        Проверяется содержимое поля slug:
+            строка не содержит username пользователя не автора заметки.
         """
-        self.author_1_client.force_login(self.authors[0])
-        self.author_2_client.force_login(self.authors[1])
+        self.author_client.force_login(self.users[0])
 
-        response_author_1 = self.author_1_client.get(self.LIST_NOTES_URL)
-        response_author_2 = self.author_2_client.get(self.LIST_NOTES_URL)
+        response_author = self.author_client.get(self.URL_NOTES_LIST)
+        self.assertIn('object_list', response_author.context)
 
-        self.assertIn('object_list', response_author_1.context)
-        self.assertIn('object_list', response_author_2.context)
+        notes_author = response_author.context['object_list']
+        self.assertEqual(len(notes_author), self.COUNT_NOTES)
 
-        notes_author_1 = response_author_1.context['object_list']
-        notes_author_2 = response_author_2.context['object_list']
-
-        slugs_author_1 = []
-        slugs_author_2 = []
-        for note in notes_author_1:
-            slugs_author_1.append(note.slug)
-        for note in notes_author_2:
-            slugs_author_2.append(note.slug)
-        self.assertNotEqual(slugs_author_1, slugs_author_2)
+        for note_author in notes_author:
+            self.assertNotIn(str(self.users[1]), note_author.slug)
 
 
-class TestDetailPage(TestCase):
+class TestDetailPage(ClassTestMixin):
     """
     Формы на страницах.
 
@@ -93,7 +86,7 @@ class TestDetailPage(TestCase):
     @classmethod
     def setUpTestData(cls):
         """Фикстуры для класса."""
-        cls.author = User.objects.create(username='David')
+        super().setUpTestData()
         cls.note = Note.objects.create(
             title=f'Заголовок автора {cls.author}',
             text=f'Текст автора {cls.author}',
@@ -108,14 +101,13 @@ class TestDetailPage(TestCase):
         На страницы создания и редактирования заметок передаются формы.
         """
         urls = (
-            ('notes:add', None),
-            ('notes:edit', (self.note.slug,)),
+            (self.NAMESPACE_NOTES_ADD, None),
+            (self.NAMESPACE_NOTES_EDIT, (self.note.slug,)),
         )
         self.client.force_login(self.author)
 
         for name, args in urls:
             with self.subTest(name=name, args=args):
-                url = reverse(name, args=args)
-                response = self.client.get(url)
+                response = self.client.get(reverse(name, args=args))
                 self.assertIn('form', response.context)
                 self.assertIsInstance(response.context['form'], NoteForm)
