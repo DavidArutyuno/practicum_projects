@@ -1,26 +1,23 @@
-import pytest
-from pytest_django.asserts import assertRedirects
-
 from http import HTTPStatus
 
-from django.urls import reverse
+import pytest
+from pytest_django.asserts import assertRedirects
 
 from news.pytest_tests import settings as s
 
 
 @pytest.mark.parametrize(
-    'name, args',
+    'url',
     (
-        (s.NEWS_HOME, None),
-        (s.NEWS_DETAIL, pytest.lazy_fixture('id_for_args')),
-        (s.USERS_LOGIN, None),
-        (s.USERS_LOGOUT, None),
-        (s.USERS_SIGNUP, None),
+        s.URL_NEWS_HOME,
+        pytest.lazy_fixture('url_news_detail'),
+        s.URL_USERS_LOGIN,
+        s.URL_USERS_LOGOUT,
+        s.URL_USERS_SIGNUP,
     ),
 )
-def test_pages_availability_for_anonymous_user(client, name, args):
+def test_pages_availability_for_anonymous_user(client, url):
     """Анониму доступны страницы."""
-    url = reverse(name, args=args)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
@@ -33,11 +30,14 @@ def test_pages_availability_for_anonymous_user(client, name, args):
     ),
 )
 @pytest.mark.parametrize(
-    'name',
-    (s.NEWS_EDIT, s.NEWS_DELETE),
+    'url',
+    (
+        pytest.lazy_fixture('url_news_comment_edit'),
+        pytest.lazy_fixture('url_news_comment_delete')
+    ),
 )
 def test_pages_availability_for_different_users(
-        parametrized_client, name, comment, expected_status
+        parametrized_client, url, expected_status
 ):
     """
     Редактирование и удаление комментариев.
@@ -45,27 +45,25 @@ def test_pages_availability_for_different_users(
     Проверка ответа сервера на нажатие "кнопок" редактирования и
     удаления комментария для разных категорий пользователей.
     """
-    url = reverse(name, args=(comment.id,))
+    # url = reverse(name, args=(comment.id,))
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
 
 
 @pytest.mark.parametrize(
-    'name',
+    'url',
     (
-        s.NEWS_EDIT,
-        s.NEWS_DELETE
+        pytest.lazy_fixture('url_news_comment_edit'),
+        pytest.lazy_fixture('url_news_comment_delete')
     ),
 )
-def test_redirect_for_anonymous_client(name, client, comment):
+def test_redirect_for_anonymous_client(url, client):
     """
     Редиректы.
 
     Проверка переадресации для анонимных пользователей
     на страницах удаления/редактирования комментариев.
     """
-    login_url = reverse(s.USERS_LOGIN)
-    url = reverse(name, args=(comment.id,))
-    expected_url = f'{login_url}?next={url}'
+    expected_url = f'{s.URL_USERS_LOGIN}?next={url}'
     response = client.get(url)
     assertRedirects(response, expected_url)
