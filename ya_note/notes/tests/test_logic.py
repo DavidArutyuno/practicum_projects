@@ -100,7 +100,6 @@ class TestNoteCreation(ClassTestMixin):
 
     def test_user_cant_create_note_exists_slug(self):
         """Невозможно создать две заметки с одинаковым slug."""
-
         response = self.auth_client.post(
             self.URL_NOTES_ADD, data=self.bad_note_with_error)
         form = response.context['form']
