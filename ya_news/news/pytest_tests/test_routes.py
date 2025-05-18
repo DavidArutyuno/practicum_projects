@@ -45,7 +45,6 @@ def test_pages_availability_for_different_users(
     Проверка ответа сервера на нажатие "кнопок" редактирования и
     удаления комментария для разных категорий пользователей.
     """
-    # url = reverse(name, args=(comment.id,))
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
 
