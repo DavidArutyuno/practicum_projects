@@ -18,11 +18,16 @@ def test_anonymous_user_cant_create_comment(
     client,
     url
 ):
-    """Анонимный пользователь не может отправить комментарий."""
-    count_comments_start_test = Comment.objects.count()
+    """
+    Анонимный пользователь не может отправить комментарий.
+
+    1. Перед началом теста удаляем все комментарии из БД.
+    2. После теста ожидаем, что новых объектов в БД не появилось.
+    """
+    Comment.objects.all().delete
     client.post(url, data=s.COMMENT_DATA)
     count_comments_end_test = Comment.objects.count()
-    assert count_comments_end_test == count_comments_start_test
+    assert count_comments_end_test == 0
 
 
 @pytest.mark.parametrize(
@@ -37,12 +42,18 @@ def test_user_can_create_comment(
     url,
     news
 ):
-    """Авторизованный пользователь может отправить комментарий."""
-    count_comments_start_test = Comment.objects.count()
+    """
+    Авторизованный пользователь может отправить комментарий.
+
+    1. Перед началом теста удаляем все комментарии из БД.
+    2. После теста ожидаем, что новый объект появился в БД.
+    3. ORM запросом получаем последнюю запись и сравниваем составы.
+    """
+    Comment.objects.all().delete
     response = author_client.post(url, data=s.COMMENT_DATA)
     assertRedirects(response, f'{url}#comments')
     count_comments_end_test = Comment.objects.count()
-    assert count_comments_end_test == count_comments_start_test + 1
+    assert count_comments_end_test == 1
 
     comment = Comment.objects.last()
     assert comment.text == s.COMMENT_TEXT
@@ -70,8 +81,10 @@ def test_user_cant_use_bad_words(
 
     Если комментарий содержит запрещённые слова,
     он не будет опубликован, а форма вернёт ошибку.
+    1. Перед началом теста удаляем все комментарии из БД.
+    2. После теста ожидаем, что новых объектов в БД не появилось.
     """
-    count_comments_start_test = Comment.objects.count()
+    Comment.objects.all().delete
     response = author_client.post(url, data={'text': bad_words})
     form = response.context['form']
     assertFormError(
@@ -80,7 +93,7 @@ def test_user_cant_use_bad_words(
         errors=WARNING
     )
     count_comments_end_test = Comment.objects.count()
-    assert count_comments_end_test == count_comments_start_test
+    assert count_comments_end_test == 0
 
 
 @pytest.mark.parametrize(
@@ -100,7 +113,12 @@ def test_author_can_delete_comment(
     url_delete,
     url_comment_detail
 ):
-    """Автор может удалять свои комментарии."""
+    """
+    Автор может удалять свои комментарии.
+
+    1. Перед началом теста извлекаем из БД кол-во комментов.
+    2. После теста ожидаем, что на 1 запись в БД стало меньше.
+    """
     count_comments_start_test = Comment.objects.count()
     response = author_client.delete(url_delete)
     assertRedirects(response, url_comment_detail + '#comments')
@@ -119,7 +137,12 @@ def test_user_cant_delete_comment_of_another_user(
         not_author_client,
         url
 ):
-    """Пользователь не может удалить чужой комментарий."""
+    """
+    Пользователь не может удалить чужой комментарий.
+
+    1. Перед началом теста извлекаем из БД кол-во комментов.
+    2. После теста ожидаем, что кол-во объектов в БД не изменилось.
+    """
     count_comments_start_test = Comment.objects.count()
     response = not_author_client.delete(url)
     count_comments_end_test = Comment.objects.count()
