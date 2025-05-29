@@ -1,3 +1,7 @@
+# custom .py scripts
+yandex_lessons_api.py
+app_logger.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
