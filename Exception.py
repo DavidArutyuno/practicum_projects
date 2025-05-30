@@ -1,3 +1,5 @@
+"""Иключения для работы бот ассистента."""
+
 from requests.exceptions import HTTPError, ConnectionError, Timeout
 
 

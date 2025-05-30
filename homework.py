@@ -235,19 +235,30 @@ def main():
     if check_tokens():
         bot = TeleBot(token=TELEGRAM_TOKEN)
         timestamp = int(time.time() - OFFSET)
+        update_homework = dict()
+        last_error_message = ''
 
         while True:
             try:
-
+                logger.debug('Запрос к «API сервису Практикум Домашка».')
                 response_dict = get_api_answer(timestamp=timestamp)
-                if check_response(response_dict):
-                    send_message(
-                        bot=bot,
-                        message=parse_status(response_dict['homeworks'][0])
-                    )
+
+                if (check_response(response_dict) and
+                        (response_dict['homeworks'] != [])):
+                    last_homework = response_dict['homeworks'][0]
+                    if last_homework != update_homework:
+                        new_status = parse_status(
+                            response_dict['homeworks'][0]
+                        )
+                        logger.info('Обновился статус домашки.')
+                        send_message(bot=bot, message=new_status)
+                        update_homework = last_homework
             except BaseException as error:
                 message = f'Сбой в работе программы: {error}'
                 logger.error(message)
+                if message != last_error_message:
+                    send_message(bot, message)
+                    last_error_message = message
             finally:
                 time.sleep(RETRY_PERIOD)
 
