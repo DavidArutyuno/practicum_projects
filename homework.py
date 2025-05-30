@@ -243,8 +243,8 @@ def main():
                 logger.debug('Запрос к «API сервису Практикум Домашка».')
                 response_dict = get_api_answer(timestamp=timestamp)
 
-                if (check_response(response_dict) and
-                        (response_dict['homeworks'] != [])):
+                if (check_response(response_dict)
+                        and (response_dict['homeworks'] != [])):
                     last_homework = response_dict['homeworks'][0]
                     if last_homework != update_homework:
                         new_status = parse_status(
