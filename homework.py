@@ -41,12 +41,12 @@ KEY_DICT_HOMEWORKS = [
 ]
 
 _log_format = (
-    f'%(asctime)s - {''}' +
-    f'%(name)s - {''}' +
-    f'[%(levelname)s] - {''}' +
-    f'[%(color)s] - {''}' +
-    f'%(message)s - {''}' +
-    f'(%(filename)s).%(funcName)s(%(lineno)d) {''}'
+    f'%(asctime)s - {''}'
+    + f'%(name)s - {''}'
+    + f'[%(levelname)s] - {''}'
+    + f'[%(color)s] - {''}'
+    + f'%(message)s - {''}'
+    + f'(%(filename)s).%(funcName)s(%(lineno)d) {''}'
 )
 
 
@@ -129,8 +129,8 @@ def send_message(bot: TeleBot, message):
         logger.debug(f'Сообщение отправлено: {message}')
     except Exception.ApiTelegramException as error:
         logger.error(
-            'При отправки сообщения в Telegram ' +
-            f'произошла ошибка: {error}'
+            'При отправки сообщения в Telegram '
+            + f'произошла ошибка: {error}'
         )
 
 
@@ -153,16 +153,16 @@ def get_api_answer(timestamp):
         if response.status_code != HTTPStatus.OK:
             raise Exception.ResponseStatusCodeError(
                 logger.error(
-                    f'{response.json()['code']}: ' +
-                    f'API домашки возвращает код, отличный от 200.{''}'
+                    f'{response.json()['code']}: '
+                    + f'API домашки возвращает код, отличный от 200.{''}'
                 )
             )
     except requests.exceptions.HTTPError as error:
         logger.error(f'Произошла ошибка HTTP: {error}')
     except requests.exceptions.RequestException as error:
         logger.error(
-            'При обработке запроса произошло ' +
-            f'неоднозначное исключение: {error}'
+            'При обработке запроса произошло '
+            + f'неоднозначное исключение: {error}'
         )
     logger.debug('Функция get_api_answer выполнена.')
     return response.json()
@@ -217,8 +217,8 @@ def parse_status(homework):
         if key not in homework.keys():
             raise Exception.UnknownStatusHomeworksError(
                 logger.error(
-                    'В ответе API, в словаре данных ' +
-                    f'отсутствует ожидаемый ключ "{key}".'
+                    'В ответе API, в словаре данных '
+                    + f'отсутствует ожидаемый ключ "{key}".'
                 )
             )
 
