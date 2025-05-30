@@ -1,3 +1,5 @@
+"""My Bot Assistant."""
+
 import logging
 import os
 import requests
@@ -8,7 +10,7 @@ from dotenv import load_dotenv
 from http import HTTPStatus
 from telebot import TeleBot
 
-import Exception as e
+import Exception
 
 load_dotenv()
 
@@ -39,17 +41,18 @@ KEY_DICT_HOMEWORKS = [
 ]
 
 _log_format = (
-    f'%(asctime)s - ' +
-    f'%(name)s - ' +
-    f'[%(levelname)s] - ' +
-    f'[%(color)s] - ' +
-    f'%(message)s - ' +
-    f'(%(filename)s).%(funcName)s(%(lineno)d)'
+    f'%(asctime)s - {''}' +
+    f'%(name)s - {''}' +
+    f'[%(levelname)s] - {''}' +
+    f'[%(color)s] - {''}' +
+    f'%(message)s - {''}' +
+    f'(%(filename)s).%(funcName)s(%(lineno)d) {''}'
 )
 
 
 class CustomFilter(logging.Filter):
     """Кастомное выделение сообщений в журналировании."""
+
     COLOR = {
         "DEBUG": "GREEN",
         "INFO": "GREEN",
@@ -97,18 +100,17 @@ def check_tokens():
     }
     for key, value in environments_variables.items():
         if value is None:
-            logger.critical(
-                f'Отсутствует обязательная переменная окружения: {key}'
-                '\n Программа принудительно остановлена.'
+            raise Exception.EnvironmentError(
+                logger.critical(
+                    f'Отсутствует обязательная переменная окружения: {key}'
+                    '\n Программа принудительно остановлена.'
+                )
             )
-            raise EnvironmentError(
-                f'Отсутствует обязательная переменная окружения: {key}'
-                '\n Программа принудительно остановлена.'
-            )
+    logger.debug('Функция check_tokens выполнена.')
     return True
 
 
-def send_message(bot: TeleBot, message: str):
+def send_message(bot: TeleBot, message):
     """
     Отправка сообщений.
 
@@ -118,14 +120,18 @@ def send_message(bot: TeleBot, message: str):
         экземпляр класса TeleBot и
         строку с текстом сообщения.
     """
-    chat_id = TELEGRAM_CHAT_ID
-
-    bot.send_message(
-        chat_id=chat_id,
-        text=message,
-    )
-
-    logger.debug(f'Сообщение отправлено: {message}')
+    try:
+        chat_id = TELEGRAM_CHAT_ID
+        bot.send_message(
+            chat_id=chat_id,
+            text=message,
+        )
+        logger.debug(f'Сообщение отправлено: {message}')
+    except Exception.ApiTelegramException as error:
+        logger.error(
+            'При отправки сообщения в Telegram ' +
+            f'произошла ошибка: {error}'
+        )
 
 
 def get_api_answer(timestamp):
@@ -145,12 +151,11 @@ def get_api_answer(timestamp):
             params=payload
         )
         if response.status_code != HTTPStatus.OK:
-            logger.error(
-                f'{response.json()['code']}: ' +
-                'API домашки возвращает код, отличный от 200.'
-            )
-            raise e.ResponseStatusCodeError(
-                'API домашки возвращает код, отличный от 200.'
+            raise Exception.ResponseStatusCodeError(
+                logger.error(
+                    f'{response.json()['code']}: ' +
+                    f'API домашки возвращает код, отличный от 200.{''}'
+                )
             )
     except requests.exceptions.HTTPError as error:
         logger.error(f'Произошла ошибка HTTP: {error}')
@@ -159,10 +164,11 @@ def get_api_answer(timestamp):
             'При обработке запроса произошло ' +
             f'неоднозначное исключение: {error}'
         )
+    logger.debug('Функция get_api_answer выполнена.')
     return response.json()
 
 
-def check_response(response: requests):
+def check_response(response):
     """
     Проверка ответа от API.
 
@@ -171,34 +177,29 @@ def check_response(response: requests):
     В качестве параметра функция получает ответ API,
     приведённый к типам данных Python.
     """
-    if type(response) != dict:
-        logger.error('В ответе API не найден словарь с данными.')
-        raise e.TypeResponseIsNotDictError(
-            'В ответе API не найден словарь с данными.'
+    if not isinstance(response, dict):
+        raise Exception.TypeResponseIsNotDictError(
+            logger.error('В ответе API не найден словарь с данными.')
         )
 
-    if 'homeworks' not in response:
-        logger.error('В ответе API в словаре нет ключа "homeworks".')
-        raise e.HomeworksNotInResponseError(
-            'В ответе API в словаре нет ключа "homeworks".'
+    if 'homeworks' not in response.keys():
+        raise Exception.HomeworksNotInResponseError(
+            logger.error('В ответе API в словаре нет ключа "homeworks".')
         )
 
-    if type(response['homeworks']) != list:
-        logger.error(
-            'В ответе API под ключом "homeworks" значение '
-            'не является списоком.'
-        )
-        raise e.TypeHomeworksIsNotListError(
-            'В ответе API под ключом "homeworks" значение '
-            'не является списоком.'
+    if not isinstance(response['homeworks'], list):
+        raise Exception.TypeHomeworksIsNotListError(
+            logger.error(
+                'В ответе API под ключом "homeworks" значение '
+                'не является списоком.'
+            )
         )
 
     if len((response['homeworks'])) == 0:
-        logger.debug('Получен пустой список домашних работ.')
-        raise e.ValueHomeworksError(
-            'Получен пустой список домашних работ.'
+        raise Exception.ValueHomeworksError(
+            logger.debug('Получен пустой список домашних работ.')
         )
-
+    logger.debug('Функция check_response выполнена.')
     return True
 
 
@@ -214,28 +215,18 @@ def parse_status(homework):
     """
     for key in KEY_DICT_HOMEWORKS:
         if key not in homework.keys():
-            logger.error(
-                'В ответе API, в словаре данных ' +
-                f'отсутствует ожидаемый ключ "{key}".'
+            raise Exception.UnknownStatusHomeworksError(
+                logger.error(
+                    'В ответе API, в словаре данных ' +
+                    f'отсутствует ожидаемый ключ "{key}".'
+                )
             )
-            raise e.UnknownStatusHomeworksError(
-                'В ответе API, в словаре данных ' +
-                f'отсутствует ожидаемый ключ "{key}".'
-            )
-
-    # if homework['status'] not in HOMEWORK_VERDICTS.keys():
-    #     logger.error(
-    #         f'Неожиданный статус домашней работы: {homework['status']}'
-    #     )
-    #     raise e.UnknownStatusHomeworksError(
-    #         'Неожиданный статус домашней работы, обнаруженный в ответе API'
-    #     )
 
     for key, value in HOMEWORK_VERDICTS.items():
         if homework['status'] == key:
             homework_name = homework['homework_name']
             verdict = value
-
+    logger.debug('Функция parse_status выполнена.')
     return f'Изменился статус проверки работы "{homework_name}". {verdict}'
 
 
@@ -254,7 +245,7 @@ def main():
                         bot=bot,
                         message=parse_status(response_dict['homeworks'][0])
                     )
-            except Exception as error:
+            except BaseException as error:
                 message = f'Сбой в работе программы: {error}'
                 logger.error(message)
             finally:

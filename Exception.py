@@ -1,3 +1,6 @@
+from requests.exceptions import HTTPError, ConnectionError, Timeout
+
+
 class EnvironmentError(ConnectionError):
     """Ошибки окружения."""
     pass
@@ -30,4 +33,9 @@ class UnknownStatusHomeworksError(KeyError):
 
 class ValueHomeworksError(ValueError):
     """Получен пустой список домашних работ."""
+    pass
+
+
+class ApiTelegramException(ConnectionError, HTTPError, Timeout):
+    """Ошибка при обращении к API telegramm."""
     pass
