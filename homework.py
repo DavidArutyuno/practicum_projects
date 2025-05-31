@@ -147,7 +147,8 @@ def get_api_answer(timestamp):
         )
         if response.status_code != HTTPStatus.OK:
             raise Exception.ResponseStatusCodeError(
-                f'API вернул код {response.status_code}, отличный от 200.'
+                f'API (Практикум Домашка) вернул код {response.status_code}, '
+                + 'отличный от 200.'
             )
     except requests.exceptions.HTTPError as error:
         return f'Произошла ошибка HTTP: {error}'
@@ -190,8 +191,9 @@ def check_response(response):
         )
 
     if len((response['homeworks'])) == 0:
+        logger.debug('Получен пустой список домашних работ.')
         raise Exception.ValueHomeworksError(
-            logger.debug('Получен пустой список домашних работ.')
+            'Получен пустой список домашних работ.'
         )
     logger.debug('Функция check_response выполнена.')
     return True
@@ -246,7 +248,7 @@ def main():
                         update_homework = last_homework
             except BaseException as error:
                 message = f'Сбой в работе программы: {error}'
-                logger.error(message)
+                logger.error(message, exc_info=True)
                 if message != last_error_message:
                     send_message(bot, message)
                     last_error_message = message
