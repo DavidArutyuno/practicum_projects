@@ -1,5 +1,6 @@
 """My Bot Assistant."""
 
+import json
 import logging
 import os
 import requests
@@ -41,12 +42,8 @@ KEY_DICT_HOMEWORKS = [
 ]
 
 _log_format = (
-    f'%(asctime)s - {''}'
-    + f'%(name)s - {''}'
-    + f'[%(levelname)s] - {''}'
-    + f'[%(color)s] - {''}'
-    + f'%(message)s - {''}'
-    + f'(%(filename)s).%(funcName)s(%(lineno)d) {''}'
+    '%(asctime)s - %(name)s - [%(levelname)s] - [%(color)s] - %(message)s - '
+    + '(%(filename)s -> %(funcName)s -> line %(lineno)d)'
 )
 
 
@@ -90,8 +87,8 @@ def check_tokens():
     """
     Проверка доступности переменных окружения.
 
-    Если отсутствует хотя бы одна переменная окружения — функция вернет False и
-    выполнение программы остановится, а событие запишется в журнал (лог).
+    Если отсутствует хотя бы одна переменная окружения — выполнение программы
+    остановится, а событие запишется в журнал (лог).
     """
     environments_variables = {
         'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
@@ -99,7 +96,7 @@ def check_tokens():
         'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
     }
     for key, value in environments_variables.items():
-        if value is None:
+        if (value is None) or (value == ''):
             raise Exception.EnvironmentError(
                 logger.critical(
                     f'Отсутствует обязательная переменная окружения: {key}'
@@ -129,8 +126,7 @@ def send_message(bot: TeleBot, message):
         logger.debug(f'Сообщение отправлено: {message}')
     except Exception.ApiTelegramException as error:
         logger.error(
-            'При отправки сообщения в Telegram '
-            + f'произошла ошибка: {error}'
+            f'При отправки сообщения в Telegram произошла ошибка: {error}'
         )
 
 
@@ -153,19 +149,27 @@ def get_api_answer(timestamp):
         if response.status_code != HTTPStatus.OK:
             raise Exception.ResponseStatusCodeError(
                 logger.error(
-                    f'{response.json()['code']}: '
-                    + f'API домашки возвращает код, отличный от 200.{''}'
+                    f'API вернул код {response.status_code}, отличный от 200.'
                 )
             )
     except requests.exceptions.HTTPError as error:
         logger.error(f'Произошла ошибка HTTP: {error}')
     except requests.exceptions.RequestException as error:
         logger.error(
-            'При обработке запроса произошло '
-            + f'неоднозначное исключение: {error}'
+            f'При обработке запроса произошло исключение: {error}'
         )
     logger.debug('Функция get_api_answer выполнена.')
-    return response.json()
+    try:
+        return response.json()
+    except json.decoder.JSONDecodeError as error:
+        logger.error(
+            f'При обработке запроса произошло исключение: {error}'
+        )
+        null_response = {
+            'current_date': time.time(),
+            'homeworks': []
+        }
+        return null_response
 
 
 def check_response(response):
@@ -182,7 +186,7 @@ def check_response(response):
             logger.error('В ответе API не найден словарь с данными.')
         )
 
-    if 'homeworks' not in response.keys():
+    if 'homeworks' not in response:
         raise Exception.HomeworksNotInResponseError(
             logger.error('В ответе API в словаре нет ключа "homeworks".')
         )
@@ -190,8 +194,7 @@ def check_response(response):
     if not isinstance(response['homeworks'], list):
         raise Exception.TypeHomeworksIsNotListError(
             logger.error(
-                'В ответе API под ключом "homeworks" значение '
-                'не является списоком.'
+                'В ответе API под ключом "homeworks" не найден список.'
             )
         )
 
@@ -214,11 +217,10 @@ def parse_status(homework):
     словаря HOMEWORK_VERDICTS.
     """
     for key in KEY_DICT_HOMEWORKS:
-        if key not in homework.keys():
+        if key not in homework:
             raise Exception.UnknownStatusHomeworksError(
                 logger.error(
-                    'В ответе API, в словаре данных '
-                    + f'отсутствует ожидаемый ключ "{key}".'
+                    f'В ответе API, в словаре отсутствует ключ "{key}".'
                 )
             )
 
