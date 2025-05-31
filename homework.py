@@ -20,7 +20,7 @@ PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 
-OFFSET = 3600000
+FOR_MONTH = 2629743
 RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
@@ -123,11 +123,10 @@ def send_message(bot: TeleBot, message):
             chat_id=chat_id,
             text=message,
         )
-        logger.debug(f'Сообщение отправлено: {message}')
     except Exception.ApiTelegramException as error:
-        logger.error(
-            f'При отправки сообщения в Telegram произошла ошибка: {error}'
-        )
+        return f'При отправки сообщения в Telegram произошла ошибка: {error}'
+    else:
+        logger.debug(f'Сообщение отправлено: {message}')
 
 
 def get_api_answer(timestamp):
@@ -148,23 +147,17 @@ def get_api_answer(timestamp):
         )
         if response.status_code != HTTPStatus.OK:
             raise Exception.ResponseStatusCodeError(
-                logger.error(
-                    f'API вернул код {response.status_code}, отличный от 200.'
-                )
+                f'API вернул код {response.status_code}, отличный от 200.'
             )
     except requests.exceptions.HTTPError as error:
-        logger.error(f'Произошла ошибка HTTP: {error}')
+        return f'Произошла ошибка HTTP: {error}'
     except requests.exceptions.RequestException as error:
-        logger.error(
-            f'При обработке запроса произошло исключение: {error}'
-        )
-    logger.debug('Функция get_api_answer выполнена.')
+        return f'При обработке запроса произошло исключение: {error}'
+    else:
+        logger.debug('Функция get_api_answer выполнена.')
     try:
         return response.json()
-    except json.decoder.JSONDecodeError as error:
-        logger.error(
-            f'При обработке запроса произошло исключение: {error}'
-        )
+    except json.decoder.JSONDecodeError:
         null_response = {
             'current_date': time.time(),
             'homeworks': []
@@ -183,19 +176,17 @@ def check_response(response):
     """
     if not isinstance(response, dict):
         raise Exception.TypeResponseIsNotDictError(
-            logger.error('В ответе API не найден словарь с данными.')
+            'В ответе API не найден словарь с данными.'
         )
 
     if 'homeworks' not in response:
         raise Exception.HomeworksNotInResponseError(
-            logger.error('В ответе API в словаре нет ключа "homeworks".')
+            'В ответе API в словаре нет ключа "homeworks".'
         )
 
     if not isinstance(response['homeworks'], list):
         raise Exception.TypeHomeworksIsNotListError(
-            logger.error(
-                'В ответе API под ключом "homeworks" не найден список.'
-            )
+            'В ответе API под ключом "homeworks" не найден список.'
         )
 
     if len((response['homeworks'])) == 0:
@@ -219,9 +210,7 @@ def parse_status(homework):
     for key in KEY_DICT_HOMEWORKS:
         if key not in homework:
             raise Exception.UnknownStatusHomeworksError(
-                logger.error(
-                    f'В ответе API, в словаре отсутствует ключ "{key}".'
-                )
+                f'В ответе API, в словаре отсутствует ключ "{key}".'
             )
 
     for key, value in HOMEWORK_VERDICTS.items():
@@ -236,7 +225,7 @@ def main():
     """Основная логика работы бота."""
     if check_tokens():
         bot = TeleBot(token=TELEGRAM_TOKEN)
-        timestamp = int(time.time() - OFFSET)
+        timestamp = int(time.time() - FOR_MONTH)
         update_homework = dict()
         last_error_message = ''
 
