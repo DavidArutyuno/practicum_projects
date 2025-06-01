@@ -1,6 +1,5 @@
 """My Bot Assistant."""
 
-import json
 import logging
 import os
 import requests
@@ -43,7 +42,7 @@ KEY_DICT_HOMEWORKS = [
 
 _log_format = (
     '%(asctime)s - %(name)s - [%(levelname)s] - [%(color)s] - %(message)s - '
-    + '(%(filename)s -> %(funcName)s -> line %(lineno)d)'
+    '(%(filename)s -> %(funcName)s -> line %(lineno)d)'
 )
 
 
@@ -96,7 +95,7 @@ def check_tokens():
         'TELEGRAM_CHAT_ID': TELEGRAM_CHAT_ID
     }
     for key, value in environments_variables.items():
-        if (value is None) or (value == ''):
+        if value is None or value == '':
             raise Exception.EnvironmentError(
                 logger.critical(
                     f'Отсутствует обязательная переменная окружения: {key}'
@@ -124,7 +123,7 @@ def send_message(bot: TeleBot, message):
             text=message,
         )
     except Exception.ApiTelegramException as error:
-        return f'При отправки сообщения в Telegram произошла ошибка: {error}'
+        raise Exception.ApiTelegramException(error)
     else:
         logger.debug(f'Сообщение отправлено: {message}')
 
@@ -148,22 +147,16 @@ def get_api_answer(timestamp):
         if response.status_code != HTTPStatus.OK:
             raise Exception.ResponseStatusCodeError(
                 f'API (Практикум Домашка) вернул код {response.status_code}, '
-                + 'отличный от 200.'
+                'отличный от 200.'
             )
-    except requests.exceptions.HTTPError as error:
-        return f'Произошла ошибка HTTP: {error}'
-    except requests.exceptions.RequestException as error:
-        return f'При обработке запроса произошло исключение: {error}'
+    except requests.exceptions as error:
+        raise Exception.ApiRequestException(error)
     else:
         logger.debug('Функция get_api_answer выполнена.')
     try:
         return response.json()
-    except json.decoder.JSONDecodeError:
-        null_response = {
-            'current_date': time.time(),
-            'homeworks': []
-        }
-        return null_response
+    except Exception.JSONDecodeError as error:
+        raise Exception.JSONDecodeError(error)
 
 
 def check_response(response):

@@ -1,6 +1,10 @@
 """Иключения для работы бот ассистента."""
 
-from requests.exceptions import HTTPError, ConnectionError, Timeout
+import json
+
+from requests.exceptions import (
+    HTTPError, ConnectionError, Timeout, RequestException
+)
 
 
 class EnvironmentError(ConnectionError):
@@ -33,3 +37,11 @@ class ValueHomeworksError(ValueError):
 
 class ApiTelegramException(ConnectionError, HTTPError, Timeout):
     """Ошибка при обращении к API telegramm."""
+
+
+class ApiRequestException(HTTPError, RequestException):
+    """Ошибка при обращении к API сервиса Практикум Домашка."""
+
+
+class JSONDecodeError(json.decoder.JSONDecodeError):
+    """Ошибка при декодировании строки JSON."""
