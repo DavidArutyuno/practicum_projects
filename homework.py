@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from http import HTTPStatus
 from telebot import TeleBot
 
-import Exception
+import exceptions
 
 load_dotenv()
 
@@ -96,7 +96,7 @@ def check_tokens():
     }
     for key, value in environments_variables.items():
         if value is None or value == '':
-            raise Exception.EnvironmentError(
+            raise exceptions.EnvironmentError(
                 logger.critical(
                     f'Отсутствует обязательная переменная окружения: {key}'
                     '\n Программа принудительно остановлена.'
@@ -122,8 +122,8 @@ def send_message(bot: TeleBot, message):
             chat_id=chat_id,
             text=message,
         )
-    except Exception.ApiTelegramException as error:
-        raise Exception.ApiTelegramException(error)
+    except exceptions.ApiTelegramException as error:
+        raise exceptions.ApiTelegramException(error)
     else:
         logger.debug(f'Сообщение отправлено: {message}')
 
@@ -145,7 +145,7 @@ def get_api_answer(timestamp):
             params=payload
         )
         if response.status_code != HTTPStatus.OK:
-            raise Exception.ResponseStatusCodeError(
+            raise exceptions.ResponseStatusCodeError(
                 f'API (Практикум Домашка) вернул код {response.status_code}, '
                 'отличный от 200.'
             )
@@ -155,8 +155,8 @@ def get_api_answer(timestamp):
         logger.debug('Функция get_api_answer выполнена.')
     try:
         return response.json()
-    except Exception.JSONDecodeError as error:
-        raise Exception.JSONDecodeError(error)
+    except exceptions.JSONDecodeError as error:
+        raise exceptions.JSONDecodeError(error)
 
 
 def check_response(response):
@@ -169,23 +169,23 @@ def check_response(response):
     приведённый к типам данных Python.
     """
     if not isinstance(response, dict):
-        raise Exception.TypeResponseIsNotDictError(
+        raise exceptions.TypeResponseIsNotDictError(
             'В ответе API не найден словарь с данными.'
         )
 
     if 'homeworks' not in response:
-        raise Exception.HomeworksNotInResponseError(
+        raise exceptions.HomeworksNotInResponseError(
             'В ответе API в словаре нет ключа "homeworks".'
         )
 
     if not isinstance(response['homeworks'], list):
-        raise Exception.TypeHomeworksIsNotListError(
+        raise exceptions.TypeHomeworksIsNotListError(
             'В ответе API под ключом "homeworks" не найден список.'
         )
 
     if len((response['homeworks'])) == 0:
         logger.debug('Получен пустой список домашних работ.')
-        raise Exception.ValueHomeworksError(
+        raise exceptions.ValueHomeworksError(
             'Получен пустой список домашних работ.'
         )
     logger.debug('Функция check_response выполнена.')
@@ -204,7 +204,7 @@ def parse_status(homework):
     """
     for key in KEY_DICT_HOMEWORKS:
         if key not in homework:
-            raise Exception.UnknownStatusHomeworksError(
+            raise exceptions.UnknownStatusHomeworksError(
                 f'В ответе API, в словаре отсутствует ключ "{key}".'
             )
 
