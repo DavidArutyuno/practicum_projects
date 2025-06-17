@@ -10,36 +10,6 @@ class GroupSerializers(serializers.ModelSerializer):
         fields = ('id', 'title', 'slug', 'description')
 
 
-# class PostSerializer(serializers.ModelSerializer):
-#     author = serializers.StringRelatedField(
-#         read_only=True,
-#         default=serializers.CurrentUserDefault()
-#     )
-#     group = serializers.SlugRelatedField(
-#         queryset=Group.objects.all(),
-#         slug_field='slug',
-#         required=False
-#     )
-
-#     class Meta:
-#         model = Post
-#         fields = ('id', 'text', 'author', 'image', 'pub_date', 'group')
-
-
-# class CommentSerializer(serializers.ModelSerializer):
-#     author = serializers.StringRelatedField(
-#         read_only=True,
-#         default=serializers.CurrentUserDefault()
-#     )
-#     post = serializers.PrimaryKeyRelatedField(
-#         read_only=True
-#     )
-
-#     class Meta:
-#         model = Comment
-#         fields = ('id', 'author', 'post', 'text', 'created')
-
-
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True,
@@ -52,7 +22,17 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'author', 'post', 'text', 'created')
-        # read_only_fields = ['author', 'post']
+
+    def create(self, validated_data):
+        post_id = validated_data['post_id']
+        try:
+            post = Post.objects.get(pk=post_id)
+        except Post.DoesNotExist:
+            raise serializers.ValidationError(
+                'Post with this id does not exist.'
+            )
+        comment = Comment.objects.create(post=post, **validated_data)
+        return comment
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -75,4 +55,3 @@ class PostSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'text', 'author', 'image', 'pub_date', 'group', 'comments'
         )
-        read_only_fields = ['comments', 'author', 'post']

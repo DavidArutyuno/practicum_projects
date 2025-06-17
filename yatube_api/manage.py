@@ -9,6 +9,7 @@ def main():
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
+        message = f'Сбой в работе программы: {exc}\n'
         raise ImportError(
             "Couldn't import Django. Are you sure it's installed and "
             "available on your PYTHONPATH environment variable? Did you "
