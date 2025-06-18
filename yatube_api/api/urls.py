@@ -3,25 +3,33 @@ from rest_framework import routers
 from rest_framework.authtoken import views
 
 from api.views import (
-    GroupList, GroupDetail, CommentViewSet, PostViewSet
+    GroupListViewSet, GroupDetailViewSet, CommentViewSet, PostViewSet
 )
 
 
 router = routers.DefaultRouter()
 router.register(
-    r'api/v1/posts',
+    r'groups',
+    GroupListViewSet
+)
+router.register(
+    r'groups',
+    GroupDetailViewSet,
+    basename='group_detail'
+)
+
+router.register(
+    r'posts',
     PostViewSet,
     basename='posts'
 )
 router.register(
-    r'api/v1/posts/(?P<post_id>\d+)/comments',
+    r'posts/(?P<post_id>\d+)/comments',
     CommentViewSet,
     basename='comments'
 )
 
 urlpatterns = [
-    path('', include(router.urls)),
-    path('api/v1/groups/', GroupList.as_view()),
-    path('api/v1/groups/<int:pk>/', GroupDetail.as_view()),
-    path('api/v1/api-token-auth/', views.obtain_auth_token),
+    path('v1/', include(router.urls)),
+    path('v1/api-token-auth/', views.obtain_auth_token, name='token_auth'),
 ]

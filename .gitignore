@@ -150,3 +150,7 @@ static/
 yatube_api/posts/static/
 media/
 
+yatube_api.7z
+yatube_api.zip
+yatube_api/api/app_logger.py
+yatube_api/api/mixins.py

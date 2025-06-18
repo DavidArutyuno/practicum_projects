@@ -11,8 +11,9 @@ class GroupSerializers(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.StringRelatedField(
+    author = serializers.SlugRelatedField(
         read_only=True,
+        slug_field='username',
         default=serializers.CurrentUserDefault()
     )
     post = serializers.PrimaryKeyRelatedField(
@@ -23,25 +24,15 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         fields = ('id', 'author', 'post', 'text', 'created')
 
-    def create(self, validated_data):
-        post_id = validated_data['post_id']
-        try:
-            post = Post.objects.get(pk=post_id)
-        except Post.DoesNotExist:
-            raise serializers.ValidationError(
-                'Post with this id does not exist.'
-            )
-        comment = Comment.objects.create(post=post, **validated_data)
-        return comment
-
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(
         many=True,
         read_only=True
     )
-    author = serializers.StringRelatedField(
+    author = serializers.SlugRelatedField(
         read_only=True,
+        slug_field='username',
         default=serializers.CurrentUserDefault()
     )
     group = serializers.SlugRelatedField(
