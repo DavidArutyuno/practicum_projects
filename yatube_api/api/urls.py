@@ -3,19 +3,14 @@ from rest_framework import routers
 from rest_framework.authtoken import views
 
 from api.views import (
-    GroupListViewSet, GroupDetailViewSet, CommentViewSet, PostViewSet
+    GroupViewSet, CommentViewSet, PostViewSet
 )
 
 
 router = routers.DefaultRouter()
 router.register(
     r'groups',
-    GroupListViewSet
-)
-router.register(
-    r'groups',
-    GroupDetailViewSet,
-    basename='group_detail'
+    GroupViewSet
 )
 
 router.register(

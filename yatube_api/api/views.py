@@ -8,18 +8,10 @@ from .serializers import (
 from .permissions import IsAuthorOrReadOnly
 
 
-class GroupListViewSet(viewsets.ReadOnlyModelViewSet):
+class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    (GET): получаем список всех групп.
-    """
-    queryset = Group.objects.all()
-    serializer_class = GroupSerializers
-    permission_classes = [IsAuthenticated]
-
-
-class GroupDetailViewSet(viewsets.ReadOnlyModelViewSet):
-    """
-    (GET): получаем информацию о группе с идентификатором {group_id}.
+    (GET): получаем список всех групп или
+        получаем информацию о группе с идентификатором {group_id}.
     """
     queryset = Group.objects.all()
     serializer_class = GroupSerializers
