@@ -1,5 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.db.models import Deferrable
+from django.db.models.constraints import UniqueConstraint
 
 
 User = get_user_model()
@@ -45,9 +47,25 @@ class Follow(models.Model):
     )
 
     class Meta:
+        """
+        Constraints (ограничения).
+
+        Добавлен параметр deferrable=Deferrable.DEFERRED, который позволяет
+        отложить проверку уникальности до конца транзакции.
+        Это особенно полезно при работе с большими наборами данных или сложными
+        операциями, где временное нарушение уникальности не вызывает проблем,
+        а проверка в конце гарантирует целостность данных.
+        """
         verbose_name = 'подписка'
         verbose_name_plural = 'Подписки'
         ordering = ["following", "user"]
+        constraints = [
+            UniqueConstraint(
+                fields=['user', 'following'],
+                name='unique_follow',
+                deferrable=Deferrable.DEFERRED
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} подписан на {self.following}'
