@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+API_ROUTE = 'api/'
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path(
@@ -9,5 +11,5 @@ urlpatterns = [
         TemplateView.as_view(template_name='redoc.html'),
         name='redoc'
     ),
-    path('api/v1/', include('api.urls')),
+    path(API_ROUTE, include('api.urls')),
 ]
