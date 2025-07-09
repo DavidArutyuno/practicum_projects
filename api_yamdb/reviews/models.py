@@ -36,6 +36,21 @@ class Category(NameBaseModel, SlugBaseModel):
         verbose_name_plural = 'Категории'
 
 
+class Genre(NameBaseModel, SlugBaseModel):
+    """
+    Модель жанра.
+
+    Поля:
+        - name (str): Название жанра.
+        - slug (str): Слаг жанра.
+    """
+
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
+
 class Title(NameBaseModel):
     """
     Модель произведения.
@@ -55,6 +70,11 @@ class Title(NameBaseModel):
         null=True, blank=True,
         related_name='titles',
         verbose_name='Категория'
+    )
+    genre = models.ManyToManyField(
+        Genre,
+        related_name='titles',
+        verbose_name='Жанры'
     )
 
     class Meta:
