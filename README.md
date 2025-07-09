@@ -9,7 +9,7 @@ api_yamdb
     *Николай Дегтярев*<br>
     *degtyarevkolya1996@yandex.ru*<br>
     *Студент факультета Бэкенд. Когорта № 60*<br><br>
-    *Олег Ямолтдинов*<br>    
+    *Олег Ямолтдинов*<br>
     *yamoltdinovoleg@yandex.com*<br>
     *Студент факультета Бэкенд. Когорта № 60*<br><br>
     

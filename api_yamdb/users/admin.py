@@ -22,9 +22,11 @@ admin_site.index_title = "Администрирование сайта"
 
 
 UserAdmin.fieldsets += (
-    ('Extra Fields', {'fields': ('bio',)}),
+    ('Extra Fields', {'fields': ('bio', 'role',)}),
 )
-UserAdmin.list_display += ('bio',)
+UserAdmin.list_display += ('bio', 'role',)
+UserAdmin.list_filter += ('role',)
+UserAdmin.list_editable = ('role',)
 
 
 class GroupAdmin(admin.ModelAdmin):
