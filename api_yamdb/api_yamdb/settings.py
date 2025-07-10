@@ -110,3 +110,6 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
+
+MIN_BALL = 1
+MAX_BALL = 10
