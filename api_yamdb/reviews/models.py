@@ -75,12 +75,6 @@ class Title(NameBaseModel):
         related_name='titles',
         verbose_name='Категория'
     )
-    genre = models.ManyToManyField(
-        Genre,
-        through='GenreTitle',
-        related_name='titles',
-        verbose_name='Жанр'
-    )
 
     class Meta:
         ordering = ['name', 'year']
