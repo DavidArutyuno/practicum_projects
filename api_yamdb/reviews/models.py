@@ -1,8 +1,8 @@
-from django.contrib.auth import get_user_model
 from django.db import models
+from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from api_yamdb.settings import MAX_BALL, MIN_BALL
+from api_yamdb.settings import REVIEW_MAX_SCORE, REVIEW_MIN_SCORE
 
 User = get_user_model()
 
@@ -75,6 +75,12 @@ class Title(NameBaseModel):
         related_name='titles',
         verbose_name='Категория'
     )
+    genre = models.ManyToManyField(
+        Genre,
+        through='GenreTitle',
+        related_name='titles',
+        verbose_name='Жанр'
+    )
 
     class Meta:
         ordering = ['name', 'year']
@@ -126,7 +132,7 @@ class Review(models.Model):
         verbose_name='произведение'
     )
     text = models.TextField(
-        max_length=200
+        max_length=2000
     )
     author = models.ForeignKey(
         User,
@@ -137,8 +143,8 @@ class Review(models.Model):
     score = models.IntegerField(
         'баллы',
         validators=[
-            MinValueValidator(MIN_BALL),
-            MaxValueValidator(MAX_BALL),
+            MinValueValidator(REVIEW_MIN_SCORE),
+            MaxValueValidator(REVIEW_MAX_SCORE),
         ]
     )
     pub_date = models.DateTimeField(
