@@ -2,8 +2,6 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from rest_framework import viewsets, mixins
-from rest_framework.response import Response
-from rest_framework import status
 
 from api import serializers
 from api.filter import TitleFilter
@@ -30,16 +28,30 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_class = TitleFilter
 
     def perform_create(self, serializer):
-        slug = self.request.data.get('category')
-        category = get_object_or_404(models.Category, slug=slug)
-        serializer.save(category=category)
+        category_slug = self.request.data.get('category')
+        category = get_object_or_404(models.Category, slug=category_slug)
+        genre_slugs = self.request.data.get('genre')
+        genres = models.Genre.objects.filter(slug__in=genre_slugs)
+        if len(genres) != len(genre_slugs):
+            raise serializers.ValidationError(
+                'Некоторые жанры не найдены'
+            )
+        serializer.save(category=category, genre=genres)
 
 
-class CategoryViewSet(
+class BaseViewSet(
     viewsets.GenericViewSet,
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
+):
+    lookup_field = 'slug'
+    filter_backends = [SearchFilter]
+    search_fields = ['name']
+
+
+class CategoryViewSet(
+    BaseViewSet,
 ):
     """
     ViewSet для модели Category.
@@ -54,6 +66,21 @@ class CategoryViewSet(
     """
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
-    lookup_field = 'slug'
-    filter_backends = [SearchFilter]
-    search_fields = ['name']
+
+
+class GenreViewSet(
+    BaseViewSet,
+):
+    """
+    ViewSet для модели Genre.
+
+    Операции:
+        - GET: Получение списка жанров.
+        - POST: Создание нового жанра.
+        - DELETE: Удаление жанра по slug.
+
+    Поиск:
+        - По полю 'name'.
+    """
+    queryset = models.Genre.objects.all()
+    serializer_class = serializers.GenreSerializer

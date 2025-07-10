@@ -8,6 +8,7 @@ API_VERSION = 'v1/'
 router = routers.DefaultRouter()
 router.register(r'titles', views.TitleViewSet, basename='titles')
 router.register(r'categories', views.CategoryViewSet, basename='categories')
+router.register(r'genres', views.GenreViewSet, basename='genres')
 
 urlpatterns = [
     path(API_VERSION, include(router.urls)),
