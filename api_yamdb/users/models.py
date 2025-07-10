@@ -4,6 +4,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     """Пользовательская модель для пользователей."""
+    verbose_name = 'Управление пользователями'
     email = models.EmailField(
         'Адрес электронной почты',
         unique=True,
