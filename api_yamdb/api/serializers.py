@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import ValidationError
 
 from reviews import models
 
@@ -122,3 +121,26 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Review
         fields = '__all__'
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Comment.
+    Поля:
+        - review: Текст отзыва, к которому относится комментарий
+          (read_only, slug_field='text')
+        - author: Имя пользователя (read_only, slug_field='username')
+        - Остальные поля соответствуют модели Comment
+    """
+    review = serializers.SlugRelatedField(
+        slug_field='text',
+        read_only=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    class Meta:
+        fields = '__all__'
+        model = models.Comment
