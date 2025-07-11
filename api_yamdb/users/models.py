@@ -3,7 +3,18 @@ from django.db import models
 
 
 class CustomUser(AbstractUser):
-    """Пользовательская модель для пользователей."""
+    """Пользовательская модель User."""
+    ROLE_CHOICES = [
+        ('user', 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('admin', 'Администратор')
+    ]
+    role = models.CharField(
+        'Роль',
+        max_length=15,
+        choices=ROLE_CHOICES,
+        default='user'
+    )
     email = models.EmailField(
         'Адрес электронной почты',
         unique=True,
@@ -14,16 +25,9 @@ class CustomUser(AbstractUser):
         'Биография',
         blank=True
     )
-    ROLE_CHOICES = [
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор')
-    ]
-    role = models.CharField(
-        'Роль',
-        max_length=10,
-        choices=ROLE_CHOICES,
-        default='user'
+    confirmation_code = models.CharField(
+        max_length=100,
+        blank=True
     )
 
     @property
@@ -32,7 +36,7 @@ class CustomUser(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == 'admin'
+        return self.role == 'admin' or self.is_superuser
 
     def __init__(self, *args, **kwargs):
         kwargs.pop('email', None)
@@ -46,5 +50,9 @@ class CustomUser(AbstractUser):
         super().__init__(*args, **kwargs)
 
     class Meta:
+        ordering = ['id']
         verbose_name = 'пользователь'
         verbose_name_plural = 'Пользователи'
+
+    def __str__(self):
+        return self.username
