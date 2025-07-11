@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
+from rest_framework.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 from reviews import models
 
@@ -70,3 +72,42 @@ class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Genre
         fields = ('name', 'slug')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    title = serializers.SlugRelatedField(
+        slug_field='name',
+        read_only=True
+    )
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+
+    def validate_score(self, value):
+        if not (0 <= value <= 10):
+            raise serializers.ValidationError(
+                'Оценка должна быть в диапазоне от 0 до 10.'
+            )
+        return value
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        user = request.user
+        title_id = self.context.get('view').kwargs.get('title_id')
+        title_instance = get_object_or_404(models.Title, pk=title_id)
+        if request.method == 'POST':
+            existing_review = models.Review.objects.filter(
+                title=title_instance,
+                author=user
+            )
+            if existing_review.exists():
+                raise ValidationError(
+                    'Пользователь может оставить только один отзыв на '
+                    'данное произведение.'
+                )
+        return attrs
+
+    class Meta:
+        model = models.Review
+        fields = '__all__'
