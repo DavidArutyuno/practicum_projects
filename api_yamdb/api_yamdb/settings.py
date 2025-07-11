@@ -122,3 +122,5 @@ REVIEW_MAX_SCORE = 10
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
+
+CSV_DIR = (STATICFILES_DIRS[0] / 'data')
