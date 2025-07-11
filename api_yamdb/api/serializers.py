@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
-from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 from reviews import models
 
@@ -75,6 +75,17 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Review.
+    Поля:
+        - title: Название произведения (read_only, slug_field='name')
+        - author: Имя пользователя (read_only, slug_field='username')
+        - score: Оценка (валидируется, должна быть от 0 до 10)
+        - Остальные поля соответствуют модели Review
+    Валидация:
+        - Оценка должна быть в диапазоне от 0 до 10
+        - Один пользователь может оставить только один отзыв на произведение
+    """
     title = serializers.SlugRelatedField(
         slug_field='name',
         read_only=True
@@ -102,7 +113,7 @@ class ReviewSerializer(serializers.ModelSerializer):
                 author=user
             )
             if existing_review.exists():
-                raise ValidationError(
+                raise serializers.ValidationError(
                     'Пользователь может оставить только один отзыв на '
                     'данное произведение.'
                 )
