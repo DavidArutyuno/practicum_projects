@@ -172,3 +172,30 @@ EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 DEFAULT_FROM_EMAIL = 'yamdb@yamdb.com'
 SUBJECT_EMAIL = 'YaMDb. Код подтверждения.'
 MESSAGE_EMAIL = 'Ваш код подтверждения:'
+
+
+# Настройки логгирования
+
+_log_format = (
+    '%(asctime)s - %(name)s - [%(levelname)s] - [%(color)s] - %(message)s - '
+    '(%(filename)s -> %(funcName)s -> line %(lineno)d)'
+)
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'simple': {
+            'format': _log_format
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple'
+        }
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',
+    },
+}

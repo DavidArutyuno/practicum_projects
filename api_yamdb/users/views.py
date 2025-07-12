@@ -1,14 +1,24 @@
 from django.db import IntegrityError
 from django.db.models import Q
-from rest_framework import status, permissions
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import (
+    AllowAny, IsAuthenticated, IsAdminUser
+)
 
+from .app_logger import get_logger
 from .confirmation import get_confirmation_code, send_confirmation_code
 from .models import CustomUser
-from .serializers import TokenSerializer, SignupSerializer
+from .serializers import (
+    SignupSerializer, TokenSerializer,
+    UserSerializer, UserReadOrPatchSerializer
+)
+# from .permissions import IsAdminOrSelf
+
+logger = get_logger(__name__)
 
 
 class SignupView(APIView):
@@ -22,7 +32,7 @@ class SignupView(APIView):
 
     """
     throttle_classes = (AnonRateThrottle,)
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         serializer = SignupSerializer(data=request.data)
@@ -62,7 +72,7 @@ class SignupView(APIView):
 
 
 class TokenObtainView(APIView):
-    permission_classes = (permissions.AllowAny,)
+    permission_classes = (AllowAny,)
 
     def post(self, request):
         serializer = TokenSerializer(data=request.data)
@@ -94,3 +104,41 @@ class TokenObtainView(APIView):
             {'access': str(refresh.access_token)},
             status=status.HTTP_200_OK
         )
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAdminUser,)
+    lookup_field = 'username'
+
+    def get_queryset(self):
+        logger.debug("Получение queryset")
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(username__icontains=search)
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action in ('partial_update', 'retrieve'):
+            return UserReadOrPatchSerializer
+        return super().get_serializer_class()
+
+
+class MeView(viewsets.ViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    def retrieve(self, request):
+        serializer = UserReadOrPatchSerializer(request.user)
+        return Response(serializer.data)
+
+    def partial_update(self, request):
+        serializer = UserReadOrPatchSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
