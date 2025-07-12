@@ -32,9 +32,9 @@ class SignupView(APIView):
         validated_username = serializer.validated_data['username']
 
         try:
-            user = CustomUser.objects.get(
+            user = CustomUser.objects.filter(
                 Q(email=validated_email) | Q(username=validated_username)
-            )
+            ).first()
             confirmation_code = get_confirmation_code()
             user.confirmation_code = confirmation_code
             user.save()
