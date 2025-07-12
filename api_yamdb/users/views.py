@@ -6,19 +6,17 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAdminUser
+    AllowAny, IsAuthenticated
+    # IsAdminUser
 )
 
-from .app_logger import get_logger
 from .confirmation import get_confirmation_code, send_confirmation_code
 from .models import CustomUser
+from .permissions import IsAdmin
 from .serializers import (
     SignupSerializer, TokenSerializer,
     UserSerializer, UserReadOrPatchSerializer
 )
-# from .permissions import IsAdminOrSelf
-
-logger = get_logger(__name__)
 
 
 class SignupView(APIView):
@@ -38,37 +36,33 @@ class SignupView(APIView):
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        validated_email = serializer.validated_data['email']
-        validated_username = serializer.validated_data['username']
+        email = serializer.validated_data['email']
+        username = serializer.validated_data['username']
 
         try:
             user = CustomUser.objects.filter(
-                Q(email=validated_email) | Q(username=validated_username)
-            ).first()
-            confirmation_code = get_confirmation_code()
-            user.confirmation_code = confirmation_code
+                Q(email=email) | Q(username=username)).first()
+
+            if user:
+                user.email = email
+            else:
+                user = CustomUser(email=email, username=username)
+
+            user.confirmation_code = get_confirmation_code()
             user.save()
-        except CustomUser.DoesNotExist:
-            try:
-                user = CustomUser.objects.create_user(
-                    username=validated_username,
-                    email=validated_email,
-                )
-                confirmation_code = get_confirmation_code()
-                user.confirmation_code = confirmation_code
-                user.save()
-            except IntegrityError:
-                return Response(
-                    {'error': 'Username or email already exists'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
 
-        send_confirmation_code(user.email, confirmation_code)
+            send_confirmation_code(user.email, user.confirmation_code)
 
-        return Response(
-            {'email': user.email, 'username': user.username},
-            status=status.HTTP_200_OK
-        )
+            return Response({
+                'email': user.email,
+                'username': user.username
+            }, status=status.HTTP_200_OK)
+
+        except IntegrityError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class TokenObtainView(APIView):
@@ -109,11 +103,10 @@ class TokenObtainView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = (IsAdmin,)
     lookup_field = 'username'
 
     def get_queryset(self):
-        logger.debug("Получение queryset")
         queryset = super().get_queryset()
         search = self.request.query_params.get('search')
         if search:

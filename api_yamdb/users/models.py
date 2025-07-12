@@ -31,6 +31,17 @@ class CustomUser(AbstractUser):
         null=True
     )
 
+    def __init__(self, *args, **kwargs):
+        moderator_flag = kwargs.pop('moderator', False)
+        admin_flag = kwargs.pop('admin', False)
+
+        super().__init__(*args, **kwargs)
+
+        if moderator_flag:
+            self.role = 'moderator'
+        if admin_flag:
+            self.role = 'admin'
+
     @property
     def is_moderator(self):
         return self.role == 'moderator'
