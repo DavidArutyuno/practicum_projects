@@ -5,9 +5,9 @@ from rest_framework import viewsets, mixins
 
 from api import serializers
 from api.filter import TitleFilter
-from reviews import models
-from api.permissions import IsAuthorOrAdminOrReadOnly
+from api.permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrAdmin
 from django.db.models import Avg
+from reviews import models
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -17,6 +17,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all().annotate(rating=Avg('review__score'))
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
+    permission_classes = (IsAdminOrReadOnly,)
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -54,6 +55,7 @@ class CategoryViewSet(
     """
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class GenreViewSet(
@@ -72,6 +74,7 @@ class GenreViewSet(
     """
     queryset = models.Genre.objects.all()
     serializer_class = serializers.GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -79,7 +82,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ViewSet для модели Review с поддержкой CRUD.
     """
     serializer_class = serializers.ReviewSerializer
-    permission_classes = [IsAuthorOrAdminOrReadOnly]
+    permission_classes = (IsAuthorOrModeratorOrAdmin,)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -96,7 +99,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     ViewSet для модели Comment с поддержкой CRUD.
     """
     serializer_class = serializers.CommentSerializer
-    permission_classes = [IsAuthorOrAdminOrReadOnly]
+    permission_classes = (IsAuthorOrModeratorOrAdmin,)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
