@@ -27,7 +27,8 @@ class CustomUser(AbstractUser):
     )
     confirmation_code = models.CharField(
         max_length=100,
-        blank=True
+        blank=True,
+        null=True
     )
 
     @property
@@ -37,17 +38,6 @@ class CustomUser(AbstractUser):
     @property
     def is_admin(self):
         return self.role == 'admin' or self.is_superuser
-
-    def __init__(self, *args, **kwargs):
-        kwargs.pop('email', None)
-        role = None
-        if kwargs.pop('moderator', False):
-            role = 'moderator'
-        if kwargs.pop('admin', False):
-            role = 'admin'
-        if role:
-            kwargs['role'] = role
-        super().__init__(*args, **kwargs)
 
     class Meta:
         ordering = ['id']

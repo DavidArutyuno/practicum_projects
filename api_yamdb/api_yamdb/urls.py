@@ -3,6 +3,7 @@ from django.urls import include, path
 from django.views.generic import TemplateView
 
 API_ROUTE = 'api/'
+AUTH_ROUTE = API_ROUTE + 'v1/auth/'
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -12,4 +13,5 @@ urlpatterns = [
         name='redoc'
     ),
     path(API_ROUTE, include('api.urls')),
+    path(AUTH_ROUTE, include('users.urls')),
 ]
