@@ -6,13 +6,12 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import (
-    AllowAny, IsAuthenticated
-    # IsAdminUser
+    AllowAny, IsAuthenticated, IsAdminUser
 )
 
 from .confirmation import get_confirmation_code, send_confirmation_code
 from .models import CustomUser
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsAdminOrSelf, IsUser
 from .serializers import (
     SignupSerializer, TokenSerializer,
     UserSerializer, UserReadOrPatchSerializer
@@ -105,6 +104,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
     lookup_field = 'username'
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -120,7 +120,9 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 class MeView(viewsets.ViewSet):
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
+    permission_classes = (IsUser,)
+    http_method_names = ['get', 'patch']
 
     def retrieve(self, request):
         serializer = UserReadOrPatchSerializer(request.user)
