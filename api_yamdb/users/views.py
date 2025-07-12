@@ -41,7 +41,7 @@ class SignupView(APIView):
 
         try:
             user = CustomUser.objects.filter(
-                Q(email=email) | Q(username=username)).first()
+                Q(email=email) & Q(username=username)).first()
 
             if user:
                 user.email = email
