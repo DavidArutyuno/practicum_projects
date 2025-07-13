@@ -13,10 +13,13 @@
 """
 
 from django.contrib import admin
+from django.contrib.auth import get_user_model
 from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import Group
 
-from .models import CustomUser
+
+User = get_user_model()
+
 
 """"Настройка раздела для пользователей и групп."""
 UserAdmin.fieldsets += (
@@ -29,5 +32,5 @@ UserAdmin.list_editable = ('role',)
 admin_site = admin.site
 admin_site.site_header = "Панель администратора"
 admin_site.index_title = "Администрирование сайта"
-admin_site.register(CustomUser, UserAdmin)
+admin_site.register(User, UserAdmin)
 admin_site.unregister(Group)

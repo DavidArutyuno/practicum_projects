@@ -1,6 +1,9 @@
+from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.db.models import Q
-from rest_framework import viewsets, status
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, status, filters
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
@@ -10,12 +13,17 @@ from rest_framework.permissions import (
 )
 
 from .confirmation import get_confirmation_code, send_confirmation_code
-from .models import CustomUser
-from .permissions import IsAdmin, IsAdminOrSelf, IsUser, IsModerator, IsAdmin
+from .permissions import IsAdmin
 from .serializers import (
-    SignupSerializer, TokenSerializer,
-    UserSerializer, UserReadOrPatchSerializer
+    SignupSerializer,
+    TokenSerializer,
+    UserSerializer,
+    UserReadOrPatchSerializer,
+    MeSerializer
 )
+
+
+User = get_user_model()
 
 
 class SignupView(APIView):
@@ -39,13 +47,13 @@ class SignupView(APIView):
         username = serializer.validated_data['username']
 
         try:
-            user = CustomUser.objects.filter(
+            user = User.objects.filter(
                 Q(email=email) & Q(username=username)).first()
 
             if user:
                 user.email = email
             else:
-                user = CustomUser(email=email, username=username)
+                user = User(email=email, username=username)
 
             user.confirmation_code = get_confirmation_code()
             user.save()
@@ -75,8 +83,8 @@ class TokenObtainView(APIView):
         confirmation_code = serializer.validated_data['confirmation_code']
 
         try:
-            user = CustomUser.objects.get(username=username)
-        except CustomUser.DoesNotExist:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
             return Response(
                 {'error': 'Пользователь не найден.'},
                 status=status.HTTP_404_NOT_FOUND
@@ -100,50 +108,43 @@ class TokenObtainView(APIView):
 
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = CustomUser.objects.all()
+    """Вьюсет для работы с пользователями (только для администратора)."""
+    queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']
     lookup_field = 'username'
     http_method_names = ['get', 'post', 'patch', 'delete']
 
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        search = self.request.query_params.get('search')
-        if search:
-            queryset = queryset.filter(username__icontains=search)
-        return queryset
-
     def get_serializer_class(self):
-        if self.action in ('partial_update', 'retrieve'):
+        if self.action in ('retrieve', 'list'):
             return UserReadOrPatchSerializer
-        return super().get_serializer_class()
+        if self.action in ('partial_update', 'update'):
+            return UserReadOrPatchSerializer
+        return UserSerializer
 
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=(IsAuthenticated,),
+        url_path='me'
+    )
+    def me(self, request):
+        """Получение и изменение данных текущего пользователя."""
+        user = request.user
+        if request.method == 'GET':
+            serializer = MeSerializer(user)
+            return Response(serializer.data)
 
-class MeView(viewsets.ViewSet):
-    # permission_classes = (IsAuthenticated,)
-    # permission_classes = (IsUser, IsModerator, IsAdmin)
-    http_method_names = ['get', 'patch']
+        if request.method == 'PATCH':
+            serializer = MeSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
-    def check_permissions(self, request):
-        print(self.get_permissions)
-        super().check_permissions(request)
-        print('Проверка разрешений check_permissions')
-
-    def check_object_permissions(self, request, obj):
-        print(self.check_object_permissions)
-        super().check_object_permissions(request)
-        print('Проверка разрешений check_object_permissions')
-
-    def retrieve(self, request):
-        serializer = UserReadOrPatchSerializer(request.user)
-        return Response(serializer.data)
-
-    def partial_update(self, request):
-        serializer = UserReadOrPatchSerializer(
-            request.user,
-            data=request.data,
-            partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data)
+        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)

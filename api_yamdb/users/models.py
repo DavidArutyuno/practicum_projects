@@ -1,46 +1,54 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
 from django.db import models
 
 
 class CustomUser(AbstractUser):
     """Пользовательская модель User."""
-    ROLE_CHOICES = [
-        ('user', 'Пользователь'),
-        ('moderator', 'Модератор'),
-        ('admin', 'Администратор')
-    ]
     role = models.CharField(
-        'Роль',
         max_length=15,
-        choices=ROLE_CHOICES,
-        default='user'
+        choices=settings.ROLE_CHOICES,
+        default='user',
+        verbose_name='Роль'
+    )
+    username = models.CharField(
+        max_length=150,
+        unique=True,
+        validators=[
+            RegexValidator(
+                regex=r'^[\w.@+-]+\Z',
+                message='Имя пользователя содержит недопустимые символы'
+            )
+        ],
+        verbose_name='Имя пользователя'
+    )
+    first_name = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="Имя"
+    )
+    last_name = models.CharField(
+        max_length=150,
+        blank=True,
+        verbose_name="Фамилия"
     )
     email = models.EmailField(
-        'Адрес электронной почты',
+        max_length=254,
         unique=True,
-        blank=False,
-        null=False
+        verbose_name='Электронная почта'
     )
     bio = models.TextField(
-        'Биография',
-        blank=True
+        blank=True,
+        verbose_name='Биография'
     )
     confirmation_code = models.CharField(
         max_length=100,
         blank=True,
-        null=True
+        null=True,
+        verbose_name='Код подтверждения'
     )
-
-    def __init__(self, *args, **kwargs):
-        moderator_flag = kwargs.pop('moderator', False)
-        admin_flag = kwargs.pop('admin', False)
-
-        super().__init__(*args, **kwargs)
-
-        if moderator_flag:
-            self.role = 'moderator'
-        if admin_flag:
-            self.role = 'admin'
 
     @property
     def is_user(self):
@@ -53,6 +61,16 @@ class CustomUser(AbstractUser):
     @property
     def is_admin(self):
         return self.role == 'admin' or self.is_superuser
+
+    def clean(self):
+        super().clean()
+        if self.username.lower() == 'me':
+            raise ValidationError(
+                {
+                    'username': 'Использовать имя "me" '
+                    'в качестве username запрещено'
+                }
+            )
 
     class Meta:
         ordering = ['id']

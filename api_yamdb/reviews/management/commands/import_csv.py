@@ -29,7 +29,7 @@ from django.db.models import Q
 
 from api_yamdb.settings import CSV_DIR
 from reviews.models import Category, Genre, Title, Review, Comment, GenreTitle
-from users.models import CustomUser
+from users.models import User
 
 
 DATA_FILES_ORDERED = [
@@ -224,7 +224,7 @@ class Command(BaseCommand):
             needed_usernames.add(row[1])
             rows_to_process.append(row)
 
-        existing_users = CustomUser.objects.filter(
+        existing_users = User.objects.filter(
             Q(id__in=needed_ids) | 
             Q(email__in=needed_emails) | 
             Q(username__in=needed_usernames)
@@ -246,7 +246,7 @@ class Command(BaseCommand):
                 print(f'Пользователь с username {row[1]} уже существует')
                 print(f'    Пользователь {row[1]} не будет импортирован')
                 continue
-            user = CustomUser(
+            user = User(
                 id=row[0],
                 username=row[1],
                 role=row[3],
@@ -257,7 +257,7 @@ class Command(BaseCommand):
             user.email = row[2]
             users_to_save.append(user)
 
-        CustomUser.objects.bulk_create(users_to_save)
+        User.objects.bulk_create(users_to_save)
 
     def import_reviews(self, reader):
         reviews_to_save = []
@@ -281,7 +281,7 @@ class Command(BaseCommand):
                 id__in=needed_title_ids)
         }
         authors = {
-            user.id: user for user in CustomUser.objects.filter(
+            user.id: user for user in User.objects.filter(
                 id__in=needed_author_ids)
         }
 
@@ -339,7 +339,7 @@ class Command(BaseCommand):
             )
         }
         authors = {
-            user.id: user for user in CustomUser.objects.filter(
+            user.id: user for user in User.objects.filter(
                 id__in=needed_author_ids
             )
         }

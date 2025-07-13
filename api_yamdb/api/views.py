@@ -18,6 +18,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     filter_backends = [DjangoFilterBackend]
     filterset_class = TitleFilter
     permission_classes = (IsAdminOrReadOnly,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
@@ -83,6 +84,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     """
     serializer_class = serializers.ReviewSerializer
     permission_classes = (IsAuthorOrModeratorOrAdmin,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -100,6 +102,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     """
     serializer_class = serializers.CommentSerializer
     permission_classes = (IsAuthorOrModeratorOrAdmin,)
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')

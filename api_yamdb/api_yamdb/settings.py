@@ -100,6 +100,9 @@ SIMPLE_JWT = {
     'TOKEN_TYPE_CLAIM': 'token_type',
 }
 
+# SIMPLE_JWT = {
+#     'AUTH_HEADER_TYPES': ('Bearer',),
+# }
 
 # Database
 
@@ -155,8 +158,16 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 REVIEW_MIN_SCORE = 1
 REVIEW_MAX_SCORE = 10
 
+
+# Настройки для модели User
+
 AUTH_USER_MODEL = 'users.CustomUser'
 
+ROLE_CHOICES = [
+        ('user', 'Пользователь'),
+        ('moderator', 'Модератор'),
+        ('admin', 'Администратор')
+    ]
 
 CSV_DIR = (STATICFILES_DIRS[0] / 'data')
 
