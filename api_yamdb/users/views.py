@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import IntegrityError
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,17 +8,17 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.permissions import (
-    AllowAny, IsAuthenticated, IsAdminUser
+    AllowAny, IsAuthenticated
 )
 
 from .confirmation import get_confirmation_code, send_confirmation_code
 from .permissions import IsAdmin
 from .serializers import (
+    MeSerializer,
     SignupSerializer,
     TokenSerializer,
-    UserSerializer,
     UserReadOrPatchSerializer,
-    MeSerializer
+    UserSerializer
 )
 
 
@@ -73,6 +72,7 @@ class SignupView(APIView):
 
 
 class TokenObtainView(APIView):
+    """Генерация токенов по коду подтверждения."""
     permission_classes = (AllowAny,)
 
     def post(self, request):

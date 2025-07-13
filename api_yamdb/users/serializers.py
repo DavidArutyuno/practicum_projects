@@ -1,14 +1,16 @@
 from django.conf import settings
-from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
 from django.contrib.auth import get_user_model
 from django.core.validators import RegexValidator
+
+from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 
 User = get_user_model()
 
 
 class SignupSerializer(serializers.Serializer):
+    """Сериализация данных пользователя в процессе регистрации."""
     email = serializers.EmailField(
         max_length=254,
         required=True
@@ -37,12 +39,16 @@ class SignupSerializer(serializers.Serializer):
 
 
 class TokenSerializer(serializers.Serializer):
+    """Сериализация данных пользователя в процессе получения токена."""
     username = serializers.CharField(max_length=150)
     confirmation_code = serializers.CharField(write_only=True)
 
 
 class UserSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания и обновления пользователя администратором."""
+    """
+    Сериализация данных в процессе создания и обновления
+    пользователя администратором.
+    """
     username = serializers.CharField(
         required=True,
         max_length=150,
@@ -69,7 +75,10 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserReadOrPatchSerializer(serializers.ModelSerializer):
-    """Сериализатор для чтения и частичного обновления пользователя."""
+    """
+    Сериализация данных для процесса чтения и
+    частичного обновления профиля пользователя.
+    """
     username = serializers.CharField(
         required=False,
         max_length=150,
@@ -105,7 +114,7 @@ class UserReadOrPatchSerializer(serializers.ModelSerializer):
 
 
 class MeSerializer(serializers.ModelSerializer):
-    """Сериализатор для работы с собственным профилем."""
+    """Сериализация данных для работы с собственным профилем."""
     username = serializers.CharField(
         required=False,
         max_length=150,

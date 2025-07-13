@@ -1,16 +1,17 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
-from rest_framework import viewsets, mixins
 
 from api import serializers
 from api.filter import TitleFilter
 from api.permissions import (
-    IsAuthenticatedOrReadOnly,
     IsAdminOrReadOnly,
-    IsAuthorOrModeratorOrAdmin
+    IsAuthenticatedOrReadOnly,
+    IsAuthorOrModeratorOrAdmin,
 )
-from django.db.models import Avg
 from reviews import models
 
 

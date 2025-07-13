@@ -3,12 +3,14 @@ from rest_framework import routers
 
 from api import views
 
-API_VERSION = 'v1/'
+app_name = 'api'
 
 router = routers.DefaultRouter()
-router.register(r'titles', views.TitleViewSet, basename='titles')
-router.register(r'categories', views.CategoryViewSet, basename='categories')
-router.register(r'genres', views.GenreViewSet, basename='genres')
+
+router.register('categories', views.CategoryViewSet, basename='categories')
+router.register('genres', views.GenreViewSet, basename='genres')
+router.register('titles', views.TitleViewSet, basename='titles')
+
 router.register(
     r'titles/(?P<title_id>\d+)/reviews',
     views.ReviewViewSet,
@@ -21,5 +23,5 @@ router.register(
 )
 
 urlpatterns = [
-    path(API_VERSION, include(router.urls)),
+    path('', include((router.urls, 'v1'))),
 ]

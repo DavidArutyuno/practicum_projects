@@ -4,6 +4,15 @@ from rest_framework.permissions import (
 
 
 class IsAuthenticatedOrReadOnly(BasePermission):
+    """
+    Разрешает доступ:
+    - всем пользователям на безопасные методы (GET, HEAD, OPTIONS)
+    - только аутентифицированным пользователям на остальные методы
+
+    Пример использования:
+        permission_classes = [IsAuthenticatedOrReadOnly]
+    """
+
     def has_permission(self, request, view):
         return (
             request.method in SAFE_METHODS or
@@ -12,6 +21,19 @@ class IsAuthenticatedOrReadOnly(BasePermission):
 
 
 class IsAdminOrReadOnly(BasePermission):
+    """
+    Разрешает доступ:
+    - всем пользователям на безопасные методы (GET, HEAD, OPTIONS)
+    - только аутентифицированным администраторам (is_admin=True)
+      или суперпользователям на остальные методы
+
+    Атрибуты:
+        SAFE_METHODS: кортеж методов ('GET', 'HEAD', 'OPTIONS')
+
+    Пример использования:
+        permission_classes = [IsAdminOrReadOnly]
+    """
+
     def has_permission(self, request, view):
         return (
             request.method in SAFE_METHODS or
@@ -21,6 +43,24 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class IsAuthorOrModeratorOrAdmin(BasePermission):
+    """
+    Разрешает доступ к объекту:
+    - всем пользователям на безопасные методы
+    - только автору объекта, модераторам или администраторам
+      на изменяющие методы (POST, PUT, PATCH, DELETE)
+
+    Параметры:
+        request: HttpRequest объект
+        view: ViewSet или APIView
+        obj: объект модели, к которому проверяется доступ
+
+    Возвращает:
+        bool: True если доступ разрешен, иначе False
+
+    Пример использования:
+        permission_classes = [IsAuthorOrModeratorOrAdmin]
+    """
+
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True

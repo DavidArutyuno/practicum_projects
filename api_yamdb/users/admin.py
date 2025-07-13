@@ -1,15 +1,9 @@
 """
-Добавление пользовательской модели CustomUser в админ-панель Django.
+Настройка пользовательской модели CustomUser в админ-панели Django.
 
-- добавляем поля (bio, role) к стандартному набору полей (fieldsets)
-пользователя в админке.
-- добавляем кортеж, где
-    первый элемент — это название раздела в админке,
-    второй элемент — словарь, где под ключом fields можно указать нужные поля.
-- добавляем поля (bio, role) в список отображаемых в админке (list_display).
-- добавляем поле (role) в список фильтрующихся в админке (list_filter).
-- добавляем поле (role) в список редактируемых в админке (list_editable).
-- добавляем на будущее возможность кастомизации заголовков в админке.
+- Добавление полей bio и role к стандартным полям пользователя
+- Настройка отображения, фильтрации и редактирования полей
+- Кастомизация заголовков админ-панели
 """
 
 from django.contrib import admin
@@ -21,16 +15,21 @@ from django.contrib.auth.models import Group
 User = get_user_model()
 
 
-""""Настройка раздела для пользователей и групп."""
-UserAdmin.fieldsets += (
-    ('Extra Fields', {'fields': ('bio', 'role',)}),
-)
-UserAdmin.list_display += ('bio', 'role',)
-UserAdmin.list_filter += ('role',)
-UserAdmin.list_editable = ('role',)
+class CustomUserAdmin(UserAdmin):
+    """Кастомный административный класс для модели пользователя."""
 
-admin_site = admin.site
-admin_site.site_header = "Панель администратора"
-admin_site.index_title = "Администрирование сайта"
-admin_site.register(User, UserAdmin)
-admin_site.unregister(Group)
+    fieldsets = UserAdmin.fieldsets + (
+        ('Дополнительные поля', {'fields': ('bio', 'role')}),
+    )
+    list_display = UserAdmin.list_display + ('bio', 'role')
+    list_filter = UserAdmin.list_filter + ('role',)
+    list_editable = ('role',)
+
+
+# Настройка админ-панели
+admin.site.site_header = "Панель администратора"
+admin.site.index_title = "Администрирование сайта"
+
+# Регистрация моделей
+admin.site.register(User, CustomUserAdmin)
+admin.site.unregister(Group)
