@@ -11,7 +11,7 @@ from rest_framework.permissions import (
 
 from .confirmation import get_confirmation_code, send_confirmation_code
 from .models import CustomUser
-from .permissions import IsAdmin, IsAdminOrSelf, IsUser
+from .permissions import IsAdmin, IsAdminOrSelf, IsUser, IsModerator, IsAdmin
 from .serializers import (
     SignupSerializer, TokenSerializer,
     UserSerializer, UserReadOrPatchSerializer
@@ -121,8 +121,18 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class MeView(viewsets.ViewSet):
     # permission_classes = (IsAuthenticated,)
-    permission_classes = (IsUser,)
+    # permission_classes = (IsUser, IsModerator, IsAdmin)
     http_method_names = ['get', 'patch']
+
+    def check_permissions(self, request):
+        print(self.get_permissions)
+        super().check_permissions(request)
+        print('Проверка разрешений check_permissions')
+
+    def check_object_permissions(self, request, obj):
+        print(self.check_object_permissions)
+        super().check_object_permissions(request)
+        print('Проверка разрешений check_object_permissions')
 
     def retrieve(self, request):
         serializer = UserReadOrPatchSerializer(request.user)
