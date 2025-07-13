@@ -3,6 +3,14 @@ from rest_framework.permissions import (
 )
 
 
+class IsAuthenticatedOrReadOnly(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.method in SAFE_METHODS or
+            request.user.is_authenticated
+        )
+
+
 class IsAdminOrReadOnly(BasePermission):
     def has_permission(self, request, view):
         return (
@@ -13,12 +21,6 @@ class IsAdminOrReadOnly(BasePermission):
 
 
 class IsAuthorOrModeratorOrAdmin(BasePermission):
-    # def has_permission(self, request, view):
-    #     return (
-    #         # request.method in SAFE_METHODS or
-    #         request.user.is_user
-    #     )
-
     def has_object_permission(self, request, view, obj):
         if request.method in SAFE_METHODS:
             return True

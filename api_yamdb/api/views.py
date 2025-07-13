@@ -5,7 +5,11 @@ from rest_framework import viewsets, mixins
 
 from api import serializers
 from api.filter import TitleFilter
-from api.permissions import IsAdminOrReadOnly, IsAuthorOrModeratorOrAdmin
+from api.permissions import (
+    IsAuthenticatedOrReadOnly,
+    IsAdminOrReadOnly,
+    IsAuthorOrModeratorOrAdmin
+)
 from django.db.models import Avg
 from reviews import models
 
@@ -101,7 +105,10 @@ class CommentViewSet(viewsets.ModelViewSet):
     ViewSet для модели Comment с поддержкой CRUD.
     """
     serializer_class = serializers.CommentSerializer
-    permission_classes = (IsAuthorOrModeratorOrAdmin,)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        IsAuthorOrModeratorOrAdmin,
+    )
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
