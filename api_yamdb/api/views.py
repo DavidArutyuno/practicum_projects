@@ -40,6 +40,18 @@ class TitleViewSet(viewsets.ModelViewSet):
         read_serializer = serializers.TitleReadSerializer(instance)
         return Response(read_serializer.data, status=response.status_code)
 
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.TitleReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.TitleReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
 
 class BaseViewSet(
     viewsets.GenericViewSet,
