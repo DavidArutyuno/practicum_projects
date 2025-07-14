@@ -18,11 +18,12 @@ def send_confirmation_code(email, confirmation_code):
     """Отправка на email кода подтверждения."""
     subject = Header(settings.SUBJECT_EMAIL, 'utf-8').encode()
     message = f'{settings.MESSAGE_EMAIL}: {confirmation_code}'
+    from_email = settings.DEFAULT_FROM_EMAIL,
 
     email = EmailMessage(
         subject=subject,
         body=message,
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=from_email,
         to=[email],
     )
     email.send(fail_silently=True)
