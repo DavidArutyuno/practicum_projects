@@ -55,6 +55,11 @@ class SignupView(APIView):
                 user = User(email=email, username=username)
 
             user.confirmation_code = get_confirmation_code()
+            conflict_response = self.__check_conflicting_users(
+                user.username, user.email
+            )
+            if conflict_response:
+                return conflict_response
             user.save()
 
             send_confirmation_code(user.email, user.confirmation_code)
@@ -69,6 +74,44 @@ class SignupView(APIView):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+    def __check_conflicting_users(self, username, email) -> None | Response:
+        conflicting_users = User.objects.filter(
+            Q(username=username) | Q(email=email)
+        ).all()
+        username_error = None
+        email_error = None
+        if conflicting_users:
+            for user in conflicting_users:
+                if user.username == username and user.email != email:
+                    username_error = ('Пользователь с таким username уже '
+                                      'существует.')
+                if user.email == email and user.username != username:
+                    email_error = ('Пользователь с таким email уже '
+                                   'существует.')
+        if username_error and email_error:
+            return Response(
+                {
+                    'email': [email_error],
+                    'username': [username_error]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if username_error:
+            return Response(
+                {
+                    'username': [username_error]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if email_error:
+            return Response(
+                {
+                    'email': [email_error]
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return None
 
 
 class TokenObtainView(APIView):
@@ -102,7 +145,7 @@ class TokenObtainView(APIView):
         refresh = RefreshToken.for_user(user)
 
         return Response(
-            {'access': str(refresh.access_token)},
+            {'token': str(refresh.access_token)},
             status=status.HTTP_200_OK
         )
 

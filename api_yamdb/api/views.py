@@ -27,7 +27,7 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
-            return serializers.TitleSerializer
+            return serializers.TitleReadSerializer
         return serializers.TitleSerializer
 
     def perform_create(self, serializer):

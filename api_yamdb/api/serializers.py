@@ -73,6 +73,18 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
+class TitleReadSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для модели Title в режиме чтения.
+    """
+    category = CategorySerializer(read_only=True)
+    genre = GenreSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = models.Title
+        fields = ('id', 'name', 'year', 'description', 'category', 'genre')
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Review.
