@@ -34,7 +34,6 @@ class Category(NameBaseModel, SlugBaseModel):
     """
 
     class Meta:
-        ordering = ['name']
         verbose_name = 'Категория'
         verbose_name_plural = 'Категории'
 
@@ -49,7 +48,6 @@ class Genre(NameBaseModel, SlugBaseModel):
     """
 
     class Meta:
-        ordering = ['name']
         verbose_name = 'Жанр'
         verbose_name_plural = 'Жанры'
 
@@ -67,7 +65,10 @@ class Title(NameBaseModel):
     """
     year = models.IntegerField(verbose_name='Год создания')
     description = models.TextField(
-        null=True, blank=True, verbose_name='Описание')
+        verbose_name='Описание',
+        default='',
+        blank=True,
+    )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
@@ -83,7 +84,6 @@ class Title(NameBaseModel):
     )
 
     class Meta:
-        ordering = ['name', 'year']
         constraints = [
             models.UniqueConstraint(
                 fields=['name', 'year'],

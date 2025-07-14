@@ -9,11 +9,13 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+# SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -184,5 +186,5 @@ EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 # Настройки для отправки писем с подтверждением
 
 DEFAULT_FROM_EMAIL = 'yamdb@yamdb.com'
-SUBJECT_EMAIL = 'YaMDb. Код подтверждения.'
+SUBJECT_EMAIL = 'Код подтверждения'
 MESSAGE_EMAIL = 'Ваш код подтверждения:'

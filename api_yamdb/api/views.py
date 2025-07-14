@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 
 from api import serializers
 from api.filter import TitleFilter
@@ -27,11 +28,26 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         if self.action in ['list', 'retrieve']:
-            return serializers.TitleSerializer
+            return serializers.TitleReadSerializer
         return serializers.TitleSerializer
 
-    def perform_create(self, serializer):
-        serializer.save()
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.TitleReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.TitleReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.TitleReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
 
 
 class BaseViewSet(
@@ -88,8 +104,34 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ViewSet для модели Review с поддержкой CRUD.
     """
     serializer_class = serializers.ReviewSerializer
-    permission_classes = (IsAuthorOrModeratorOrAdmin,)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        IsAuthorOrModeratorOrAdmin,
+    )
     http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return serializers.ReviewReadSerializer
+        return serializers.ReviewSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.ReviewReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.ReviewReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.ReviewReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -111,6 +153,29 @@ class CommentViewSet(viewsets.ModelViewSet):
         IsAuthorOrModeratorOrAdmin,
     )
     http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        if self.action in ['list', 'retrieve']:
+            return serializers.CommentReadSerializer
+        return serializers.CommentSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.CommentReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def update(self, request, *args, **kwargs):
+        response = super().update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.CommentReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
+
+    def partial_update(self, request, *args, **kwargs):
+        response = super().partial_update(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.CommentReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
