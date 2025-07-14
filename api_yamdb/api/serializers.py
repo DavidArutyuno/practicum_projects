@@ -24,12 +24,10 @@ class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=models.Category.objects.all(),
-        required=False,
     )
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=models.Genre.objects.all(),
-        required=False,
         many=True,
     )
 
@@ -41,6 +39,28 @@ class TitleSerializer(serializers.ModelSerializer):
         if value > timezone.now().year:
             raise serializers.ValidationError('Год не может быть в будущем')
         return value
+
+    def validate(self, attrs):
+        if 'category' in attrs:
+            category = attrs.get('category')
+            if category is None or not getattr(category, 'slug', None):
+                raise serializers.ValidationError({
+                    'category': (
+                        'Слаг категории обязателен и не может быть пустым.'
+                    )
+                })
+        if 'genre' in attrs:
+            genres = attrs.get('genre')
+            if not genres or any(
+                not getattr(genre, 'slug', None) for genre in genres
+            ):
+                raise serializers.ValidationError({
+                    'genre': (
+                        'Слаг жанра обязателен и не может быть пустым.'
+                    )
+                })
+
+        return attrs
 
 
 class CategorySerializer(serializers.ModelSerializer):
