@@ -186,5 +186,5 @@ EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 # Настройки для отправки писем с подтверждением
 
 DEFAULT_FROM_EMAIL = 'yamdb@yamdb.com'
-SUBJECT_EMAIL = 'YaMDb. Код подтверждения.'
+SUBJECT_EMAIL = 'Код подтверждения'
 MESSAGE_EMAIL = 'Ваш код подтверждения:'
