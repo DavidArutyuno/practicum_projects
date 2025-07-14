@@ -79,10 +79,14 @@ class TitleReadSerializer(serializers.ModelSerializer):
     """
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(many=True, read_only=True)
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = models.Title
-        fields = ('id', 'name', 'year', 'description', 'category', 'genre')
+        fields = (
+            'id', 'name', 'year', 'description',
+            'category', 'genre', 'rating'
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):

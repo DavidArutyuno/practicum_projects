@@ -4,6 +4,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, viewsets
 from rest_framework.filters import SearchFilter
+from rest_framework.response import Response
 
 from api import serializers
 from api.filter import TitleFilter
@@ -32,6 +33,12 @@ class TitleViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        instance = self.get_queryset().get(pk=response.data['id'])
+        read_serializer = serializers.TitleReadSerializer(instance)
+        return Response(read_serializer.data, status=response.status_code)
 
 
 class BaseViewSet(
