@@ -107,7 +107,10 @@ class ReviewViewSet(viewsets.ModelViewSet):
     ViewSet для модели Review с поддержкой CRUD.
     """
     serializer_class = serializers.ReviewSerializer
-    permission_classes = (IsAuthorOrModeratorOrAdmin,)
+    permission_classes = (
+        IsAuthenticatedOrReadOnly,
+        IsAuthorOrModeratorOrAdmin,
+    )
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_queryset(self):
