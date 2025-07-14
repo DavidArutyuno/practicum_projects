@@ -24,13 +24,16 @@ Management-команда для импорта данных из CSV-файло
 import csv
 from datetime import datetime
 
+from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
-from api_yamdb.settings import CSV_DIR
-from reviews.models import Category, Genre, Title, Review, Comment, GenreTitle
-from users.models import User
+from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
 
+from api_yamdb.settings import CSV_DIR
+
+
+User = get_user_model()
 
 DATA_FILES_ORDERED = [
     'category.csv',
@@ -83,8 +86,8 @@ class Command(BaseCommand):
             rows_to_process.append(row)
 
         existing_data = model.objects.filter(
-            Q(id__in=needed_ids) | 
-            Q(slug__in=needed_slugs)
+            Q(id__in=needed_ids)
+            | Q(slug__in=needed_slugs)
         ).values_list('id', 'slug')
         existing_ids = {row[0] for row in existing_data}
         existing_slugs = {row[1] for row in existing_data}
@@ -225,9 +228,9 @@ class Command(BaseCommand):
             rows_to_process.append(row)
 
         existing_users = User.objects.filter(
-            Q(id__in=needed_ids) | 
-            Q(email__in=needed_emails) | 
-            Q(username__in=needed_usernames)
+            Q(id__in=needed_ids)
+            | Q(email__in=needed_emails)
+            | Q(username__in=needed_usernames)
         ).values_list('id', 'email', 'username')
         existing_ids = {row[0] for row in existing_users}
         existing_emails = {row[1] for row in existing_users}
