@@ -3,6 +3,7 @@ from rest_framework.filters import SearchFilter
 
 from api.permissions import IsAdminOrReadOnly
 
+
 class UsernameValidationMixin:
     """Миксин для проверки username на запрещенные значения."""
 
@@ -33,4 +34,3 @@ class BaseViewSet(
     filter_backends = [SearchFilter]
     search_fields = ['name']
     permission_classes = (IsAdminOrReadOnly,)
-
