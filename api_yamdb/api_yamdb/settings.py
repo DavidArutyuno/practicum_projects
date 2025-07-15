@@ -152,10 +152,26 @@ REVIEW_MAX_SCORE = 10
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
+
+class UserRoles:
+    """
+    Системные роли пользователей в приложении.
+
+    Содержит константы для всех возможных ролей пользователей.
+    Использование констант вместо строковых литералов обеспечивает:
+    - Централизованное управление значениями ролей
+    - Предотвращение опечаток
+    - Лучшую поддержку IDE (автодополнение)
+    """
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+
+
 ROLE_CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор')
+    (UserRoles.USER, 'Пользователь'),
+    (UserRoles.MODERATOR, 'Модератор'),
+    (UserRoles.ADMIN, 'Администратор')
 ]
 
 CSV_DIR = (STATICFILES_DIRS[0] / 'data')

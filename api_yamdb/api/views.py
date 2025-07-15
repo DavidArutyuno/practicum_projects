@@ -1,17 +1,130 @@
+from django.contrib.auth import get_user_model
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+
+from rest_framework import (
+    filters,
+    mixins,
+    status,
+    viewsets,
+)
+from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
+from rest_framework.views import APIView
+from rest_framework_simplejwt.tokens import RefreshToken
+
 
 from api import serializers
 from api.mixins import BaseViewSet
 from api.filter import TitleFilter
 from api.permissions import (
+    IsAdmin,
     IsAdminOrReadOnly,
     IsAuthenticatedOrReadOnly,
     IsAuthorOrModeratorOrAdmin,
 )
 from reviews import models
+
+
+User = get_user_model()
+
+
+class SignupView(APIView):
+    """
+    Регистрация нового пользователя.
+    Права доступа: Доступно без токена.
+    """
+    throttle_classes = (AnonRateThrottle,)
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = serializers.SignupSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+
+class TokenObtainView(APIView):
+    """
+    Получение JWT-токена.
+
+    Обрабатывает статус-коды:
+    - 400: Некорректные данные (ошибки валидации)
+    - 404: Пользователь не найден (определяется по code='not_found')
+    - 200: Успешная выдача токена
+    """
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = serializers.TokenSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            username_error = serializer.errors.get('username', [None])[0]
+            error_code = getattr(username_error, 'code', None)
+
+            status_code = (
+                status.HTTP_404_NOT_FOUND if error_code == 'not_found'
+                else status.HTTP_400_BAD_REQUEST
+            )
+            return Response(serializer.errors, status=status_code)
+
+        user = User.objects.get(username=serializer.validated_data['username'])
+
+        refresh = RefreshToken.for_user(user)
+
+        return Response(
+            {'token': str(refresh.access_token)},
+            status=status.HTTP_200_OK
+        )
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    """Вьюсет для работы с пользователями (только для администратора)."""
+    queryset = User.objects.all()
+    serializer_class = serializers.UserSerializer
+    permission_classes = (IsAdmin,)
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['username']
+    lookup_field = 'username'
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def get_serializer_class(self):
+        if self.action in ('retrieve', 'list'):
+            return serializers.UserReadOrPatchSerializer
+        if self.action in ('partial_update', 'update'):
+            return serializers.UserReadOrPatchSerializer
+        return serializers.UserSerializer
+
+    @action(
+        detail=False,
+        methods=['get', 'patch'],
+        permission_classes=(IsAuthenticated,),
+        url_path='me'
+    )
+    def me(self, request):
+        """Получение и изменение данных текущего пользователя."""
+        user = request.user
+
+        if request.method == 'PATCH':
+            serializer = serializers.MeSerializer(
+                user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
+
+        serializer = serializers.MeSerializer(user)
+        return Response(serializer.data)
 
 
 class TitleViewSet(viewsets.ModelViewSet):

@@ -10,8 +10,7 @@ def get_confirmation_code(length=32):
     Генерируем код подтверждения
     в виде URL-безопасной строки заданной длины.
     """
-    confirmation_code = secrets.token_urlsafe(length)
-    return confirmation_code
+    return secrets.token_urlsafe(length)
 
 
 def send_confirmation_code(email, confirmation_code):
