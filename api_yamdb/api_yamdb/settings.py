@@ -9,16 +9,12 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECRET_KEY = os.getenv('SECRET_KEY')
 SECRET_KEY = 'p&l%385148kslhtyn^##a1)ilz@4zqj=rq&agdol^##zgl9(vs'
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 ALLOWED_HOSTS = ['*']
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -86,8 +82,6 @@ REST_FRAMEWORK = {
 }
 
 
-# Настройки Simple JWT
-
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=3),
@@ -107,8 +101,6 @@ SIMPLE_JWT = {
 }
 
 
-# Database
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -116,8 +108,6 @@ DATABASES = {
     }
 }
 
-
-# Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -139,8 +129,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-
 LANGUAGE_CODE = 'ru-RU'
 
 LOCALE_PATHS = [BASE_DIR / 'locale']
@@ -154,8 +142,6 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
@@ -163,8 +149,6 @@ STATICFILES_DIRS = ((BASE_DIR / 'static/'),)
 REVIEW_MIN_SCORE = 1
 REVIEW_MAX_SCORE = 10
 
-
-# Настройки для модели User
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -177,13 +161,9 @@ ROLE_CHOICES = [
 CSV_DIR = (STATICFILES_DIRS[0] / 'data')
 
 
-# Подключаем бэкенд filebased.EmailBackend:
-
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = BASE_DIR / 'sent_emails'
 
-
-# Настройки для отправки писем с подтверждением
 
 DEFAULT_FROM_EMAIL = 'yamdb@yamdb.com'
 SUBJECT_EMAIL = 'Код подтверждения'
