@@ -28,8 +28,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 from django.db.models import Q
 
-from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
-
+from reviews.models import Category, Comment, Genre, Review, Title
 from api_yamdb.settings import CSV_DIR
 
 
@@ -116,6 +115,7 @@ class Command(BaseCommand):
         needed_ids = set()
         needed_category_ids = set()
         rows_to_process = []
+        title_genres_map = {}
 
         for row in reader:
             if row[0] == 'id':
@@ -124,6 +124,7 @@ class Command(BaseCommand):
             category_id = int(row[3]) if row[3] else None
             if category_id:
                 needed_category_ids.add(category_id)
+            title_genres_map[int(row[0])] = []
             rows_to_process.append(row)
 
         existing_ids = Title.objects.filter(id__in=needed_ids).values_list(
@@ -156,61 +157,37 @@ class Command(BaseCommand):
         Title.objects.bulk_create(titles_to_create)
 
     def import_genre_title(self, reader):
-        genre_titles = []
-        needed_pairs = set()
         needed_title_ids = set()
         needed_genre_ids = set()
-        rows_to_process = []
-
+        title_to_genres = {}
         for row in reader:
             if row[0] == 'id':
                 continue
             title_id = int(row[1])
             genre_id = int(row[2])
-            needed_pairs.add((title_id, genre_id))
             needed_title_ids.add(title_id)
             needed_genre_ids.add(genre_id)
-            rows_to_process.append(row)
+            title_to_genres.setdefault(title_id, []).append(genre_id)
 
-        existing_relations = set(
-            GenreTitle.objects.filter(
-                title_id__in=needed_title_ids,
-                genre_id__in=needed_genre_ids
-            ).values_list('title_id', 'genre_id')
-        )
-        existing_title_ids = set(
-            Title.objects.filter(id__in=needed_title_ids).values_list(
-                'id', flat=True)
-        )
-        existing_genre_ids = set(
-            Genre.objects.filter(id__in=needed_genre_ids).values_list(
-                'id', flat=True)
-        )
+        titles = {t.id: t for t in Title.objects.filter(
+            id__in=needed_title_ids)}
+        genres = {g.id: g for g in Genre.objects.filter(
+            id__in=needed_genre_ids)}
 
-        for row in rows_to_process:
-            title_id = int(row[1])
-            genre_id = int(row[2])
-            if (title_id, genre_id) in existing_relations:
-                print(f'Связь title_id={title_id}, '
-                      f'genre_id={genre_id} уже существует')
-                print('    Связь не будет импортирована')
-                continue
-            if title_id not in existing_title_ids:
+        for title_id, genre_ids in title_to_genres.items():
+            title = titles.get(title_id)
+            if not title:
                 print(f'Произведение с id {title_id} не найдено')
-                print('    Связь не будет импортирована')
                 continue
-            if genre_id not in existing_genre_ids:
-                print(f'Жанр с id {genre_id} не найден')
-                print('    Связь не будет импортирована')
-                continue
-            genre_titles.append(
-                GenreTitle(
-                    title_id=title_id,
-                    genre_id=genre_id
+            valid_genres = [
+                genres[g_id] for g_id in genre_ids if g_id in genres
+            ]
+            if not valid_genres:
+                print(
+                    f'Жанры для произведения {title_id} не найдены'
                 )
-            )
-
-        GenreTitle.objects.bulk_create(genre_titles)
+                continue
+            title.genre.add(*valid_genres)
 
     def import_users(self, reader):
         users_to_save = []

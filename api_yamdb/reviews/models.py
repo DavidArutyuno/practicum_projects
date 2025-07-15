@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from api_yamdb.settings import REVIEW_MAX_SCORE, REVIEW_MIN_SCORE
+from reviews.validators import validate_year_not_in_future
 
 User = get_user_model()
 
@@ -63,7 +64,10 @@ class Title(NameBaseModel):
         - category (Category): Категория произведения.
         - genre (Genre): Жанры произведения (many-to-many).
     """
-    year = models.IntegerField(verbose_name='Год создания')
+    year = models.IntegerField(
+        verbose_name='Год создания',
+        validators=[validate_year_not_in_future]
+    )
     description = models.TextField(
         verbose_name='Описание',
         default='',
@@ -78,7 +82,6 @@ class Title(NameBaseModel):
     )
     genre = models.ManyToManyField(
         Genre,
-        through='GenreTitle',
         related_name='titles',
         verbose_name='Жанр'
     )
@@ -92,26 +95,6 @@ class Title(NameBaseModel):
         ]
         verbose_name = 'Произведение'
         verbose_name_plural = 'Произведения'
-
-
-class GenreTitle(models.Model):
-    """
-    Промежуточная модель для связи Title и Genre.
-    """
-    title = models.ForeignKey(
-        Title,
-        on_delete=models.CASCADE,
-        verbose_name='Произведение'
-    )
-    genre = models.ForeignKey(
-        Genre,
-        on_delete=models.CASCADE,
-        verbose_name='Жанр'
-    )
-
-    class Meta:
-        verbose_name = 'Произведение и жанр'
-        verbose_name_plural = 'Произведения и жанры'
 
 
 class Review(models.Model):
@@ -128,7 +111,7 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='review',
+        related_name='reviews',
         verbose_name='произведение'
     )
     text = models.TextField(
@@ -136,15 +119,21 @@ class Review(models.Model):
     )
     author = models.ForeignKey(
         User,
-        related_name='review',
+        related_name='reviews',
         verbose_name='Пользователь',
         on_delete=models.CASCADE
     )
     score = models.IntegerField(
         'баллы',
         validators=[
-            MinValueValidator(REVIEW_MIN_SCORE),
-            MaxValueValidator(REVIEW_MAX_SCORE),
+            MinValueValidator(
+                REVIEW_MIN_SCORE,
+                f'Оценка не может быть меньше {REVIEW_MIN_SCORE}'
+            ),
+            MaxValueValidator(
+                REVIEW_MAX_SCORE,
+                f'Оценка не может быть больше {REVIEW_MAX_SCORE}'
+            ),
         ]
     )
     pub_date = models.DateTimeField(
