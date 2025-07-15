@@ -6,7 +6,7 @@ from api import views
 app_name = 'api'
 
 router = routers.DefaultRouter()
-
+router.register('users', views.UserViewSet, basename='users')
 router.register('categories', views.CategoryViewSet, basename='categories')
 router.register('genres', views.GenreViewSet, basename='genres')
 router.register('titles', views.TitleViewSet, basename='titles')
@@ -22,6 +22,12 @@ router.register(
     basename='comments'
 )
 
+auth_patterns = [
+    path('auth/signup/', views.SignupView.as_view(), name='signup'),
+    path('auth/token/', views.TokenObtainView.as_view(), name='token'),
+]
+
 urlpatterns = [
-    path('', include((router.urls, 'v1'))),
+    *auth_patterns,
+    path('', include(router.urls)),
 ]

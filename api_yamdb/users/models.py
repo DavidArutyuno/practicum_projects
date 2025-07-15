@@ -1,16 +1,17 @@
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.validators import RegexValidator
 from django.db import models
+
+from api_yamdb.settings import ROLE_CHOICES, UserRoles
 
 
 class CustomUser(AbstractUser):
     """Пользовательская модель User."""
     role = models.CharField(
         max_length=15,
-        choices=settings.ROLE_CHOICES,
-        default='user',
+        choices=ROLE_CHOICES,
+        default=UserRoles.USER,
         verbose_name='Роль'
     )
     username = models.CharField(
@@ -52,15 +53,15 @@ class CustomUser(AbstractUser):
 
     @property
     def is_user(self):
-        return self.role == 'user'
+        return self.role == UserRoles.USER
 
     @property
     def is_moderator(self):
-        return self.role == 'moderator'
+        return self.role == UserRoles.MODERATOR
 
     @property
     def is_admin(self):
-        return self.role == 'admin' or self.is_superuser
+        return self.role == UserRoles.ADMIN or self.is_superuser
 
     def clean(self):
         super().clean()

@@ -149,3 +149,5 @@ dmypy.json
 media/
 
 api_yamdb/reviews/190999999999.py
+db.sqbpro
+query.sql

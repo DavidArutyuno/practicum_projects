@@ -178,20 +178,6 @@ class UserRoles:
     - Централизованное управление значениями ролей
     - Предотвращение опечаток
     - Лучшую поддержку IDE (автодополнение)
-
-    Константы:
-        USER (str): Роль обычного пользователя (значение: 'user')
-        MODERATOR (str): Роль модератора (значение: 'moderator')
-        ADMIN (str): Роль администратора (значение: 'admin')
-
-    Пример использования:
-        >>> from django.conf import settings
-        >>> user.role == settings.UserRoles.ADMIN  # Проверка роли
-        >>> User.objects.filter(role=settings.UserRoles.MODERATOR)
-
-    Примечание:
-        Все проверки ролей в коде должны использовать эти константы
-        вместо строковых литералов для поддержания consistency.
     """
     USER = 'user'
     MODERATOR = 'moderator'

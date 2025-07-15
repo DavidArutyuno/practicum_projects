@@ -20,6 +20,22 @@ class IsAuthenticatedOrReadOnly(BasePermission):
         )
 
 
+class IsAdmin(BasePermission):
+    """Проверяет, является ли пользователь администратором или
+    суперпользователем.
+
+    Разрешает доступ только аутентифицированным пользователям с флагом
+    is_admin=True или суперпользователям (is_superuser=True).
+
+    Пример использования:
+        permission_classes = [IsAdmin]
+    """
+
+    def has_permission(self, request, view):
+        return (request.user.is_authenticated
+                and (request.user.is_admin or request.user.is_superuser))
+
+
 class IsAdminOrReadOnly(BasePermission):
     """
     Разрешает доступ:
