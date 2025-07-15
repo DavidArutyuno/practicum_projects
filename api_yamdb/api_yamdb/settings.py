@@ -168,10 +168,40 @@ REVIEW_MAX_SCORE = 10
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
+
+class UserRoles:
+    """
+    Системные роли пользователей в приложении.
+
+    Содержит константы для всех возможных ролей пользователей.
+    Использование констант вместо строковых литералов обеспечивает:
+    - Централизованное управление значениями ролей
+    - Предотвращение опечаток
+    - Лучшую поддержку IDE (автодополнение)
+
+    Константы:
+        USER (str): Роль обычного пользователя (значение: 'user')
+        MODERATOR (str): Роль модератора (значение: 'moderator')
+        ADMIN (str): Роль администратора (значение: 'admin')
+
+    Пример использования:
+        >>> from django.conf import settings
+        >>> user.role == settings.UserRoles.ADMIN  # Проверка роли
+        >>> User.objects.filter(role=settings.UserRoles.MODERATOR)
+
+    Примечание:
+        Все проверки ролей в коде должны использовать эти константы
+        вместо строковых литералов для поддержания consistency.
+    """
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+
+
 ROLE_CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор')
+    (UserRoles.USER, 'Пользователь'),
+    (UserRoles.MODERATOR, 'Модератор'),
+    (UserRoles.ADMIN, 'Администратор')
 ]
 
 CSV_DIR = (STATICFILES_DIRS[0] / 'data')
