@@ -15,7 +15,6 @@ from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-
 from api import serializers
 from api.mixins import BaseViewSet
 from api.filter import TitleFilter
@@ -142,18 +141,6 @@ class TitleViewSet(viewsets.ModelViewSet):
             return serializers.TitleReadSerializer
         return serializers.TitleSerializer
 
-    def perform_create(self, serializer):
-        instance = serializer.save()
-        self.read_serializer_instance = (
-            serializers.TitleReadSerializer(instance)
-        )
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        self.read_serializer_instance = (
-            serializers.TitleReadSerializer(instance)
-        )
-
 
 class CategoryViewSet(
     BaseViewSet,
@@ -210,16 +197,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         title_id = self.kwargs.get('title_id')
         title = get_object_or_404(models.Title, pk=title_id)
-        instance = serializer.save(author=self.request.user, title=title)
-        self.read_serializer_instance = (
-            serializers.ReviewReadSerializer(instance)
-        )
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        self.read_serializer_instance = (
-            serializers.ReviewReadSerializer(instance)
-        )
+        serializer.save(author=self.request.user, title=title)
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')
@@ -245,16 +223,7 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         review_id = self.kwargs.get('review_id')
         review = get_object_or_404(models.Review, pk=review_id)
-        instance = serializer.save(author=self.request.user, review=review)
-        self.read_serializer_instance = (
-            serializers.CommentReadSerializer(instance)
-        )
-
-    def perform_update(self, serializer):
-        instance = serializer.save()
-        self.read_serializer_instance = (
-            serializers.CommentReadSerializer(instance)
-        )
+        serializer.save(author=self.request.user, review=review)
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
