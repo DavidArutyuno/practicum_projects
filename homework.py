@@ -1,19 +1,19 @@
-"""My Bot Assistant."""
-
+"""My Bot Assistant with extended functionality."""
+from datetime import datetime
 import logging
 import os
 import requests
+import sqlite3
 import sys
 import time
+from contextlib import closing
 
 from dotenv import load_dotenv
 from http import HTTPStatus
-from telebot import TeleBot
-
+from telebot import TeleBot, types
 import exceptions
 
 load_dotenv()
-
 
 PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
@@ -23,7 +23,6 @@ FOR_MONTH = 2629743
 RETRY_PERIOD = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
-
 
 HOMEWORK_VERDICTS = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
@@ -46,9 +45,14 @@ _log_format = (
 )
 
 
-class CustomFilter(logging.Filter):
-    """Кастомное выделение сообщений в журналировании."""
+class BotState:
+    """Class to store bot state."""
+    last_api_check = None
+    last_error = None
 
+
+class CustomFilter(logging.Filter):
+    """Custom logging filter for colored output."""
     COLOR = {
         "DEBUG": "GREEN",
         "INFO": "GREEN",
@@ -58,13 +62,13 @@ class CustomFilter(logging.Filter):
     }
 
     def filter(self, record):
-        """Добавляем свой фильтр."""
+        """Add color to log records."""
         record.color = CustomFilter.COLOR[record.levelname]
         return True
 
 
 def get_stream_handler():
-    """Создаем обработчик для вывода логов в терминал."""
+    """Create stream handler for logging."""
     stream_handler = logging.StreamHandler(stream=sys.stdout)
     stream_handler.setLevel(logging.INFO)
     stream_handler.setFormatter(logging.Formatter(_log_format))
@@ -72,7 +76,7 @@ def get_stream_handler():
 
 
 def get_logger(name):
-    """Создание журналирования."""
+    """Create and configure logger."""
     logger = logging.getLogger(name)
     logger.addFilter(CustomFilter())
     logger.addHandler(get_stream_handler())
@@ -82,13 +86,35 @@ def get_logger(name):
 logger = get_logger(__name__)
 
 
-def check_tokens():
-    """
-    Проверка доступности переменных окружения.
+def init_db():
+    """Initialize DB with technical and human-readable status fields."""
+    with closing(sqlite3.connect('bot_history.db')) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS status_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                homework_name TEXT NOT NULL,
+                status_code TEXT NOT NULL,  -- Технический статус (approved/reviewing/rejected)
+                status_text TEXT NOT NULL   -- Человекочитаемый статус (текст из HOMEWORK_VERDICTS)
+            )
+        ''')
+        conn.commit()
 
-    Если отсутствует хотя бы одна переменная окружения — выполнение программы
-    остановится, а событие запишется в журнал (лог).
-    """
+
+def save_status_to_db(homework_name, status_code, status_text):
+    """Save both technical and human-readable statuses."""
+    with closing(sqlite3.connect('bot_history.db')) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO status_history (homework_name, status_code, status_text)
+            VALUES (?, ?, ?)
+        ''', (homework_name, status_code, status_text))
+        conn.commit()
+
+
+def check_tokens():
+    """Check required environment variables."""
     environments_variables = {
         'PRACTICUM_TOKEN': PRACTICUM_TOKEN,
         'TELEGRAM_TOKEN': TELEGRAM_TOKEN,
@@ -107,15 +133,7 @@ def check_tokens():
 
 
 def send_message(bot: TeleBot, message):
-    """
-    Отправка сообщений.
-
-    Функция отправляет сообщение в Telegram-чат, определяемый переменной
-    окружения TELEGRAM_CHAT_ID.
-    Принимает на вход два параметра:
-        экземпляр класса TeleBot и
-        строку с текстом сообщения.
-    """
+    """Send message to Telegram chat."""
     try:
         chat_id = TELEGRAM_CHAT_ID
         bot.send_message(
@@ -129,14 +147,7 @@ def send_message(bot: TeleBot, message):
 
 
 def get_api_answer(timestamp):
-    """
-    Получение ответа от API (Практикум Домашка).
-
-    Делает запрос к единственному эндпоинту API-сервиса.
-    В качестве параметра в функцию передаётся временная метка.
-    В случае успешного запроса возвращается ответ API
-    приведенный из формата JSON к типам данных Python.
-    """
+    """Get API response."""
     payload = {'from_date': timestamp}
     try:
         response = requests.get(
@@ -146,8 +157,7 @@ def get_api_answer(timestamp):
         )
         if response.status_code != HTTPStatus.OK:
             raise exceptions.ResponseStatusCodeError(
-                f'API (Практикум Домашка) вернул код {response.status_code}, '
-                'отличный от 200.'
+                f'API вернул код {response.status_code}, отличный от 200.'
             )
     except requests.exceptions as error:
         raise Exception.ApiRequestException(error)
@@ -160,14 +170,7 @@ def get_api_answer(timestamp):
 
 
 def check_response(response):
-    """
-    Проверка ответа от API.
-
-    Проверяет ответ API на соответствие документации
-    из урока «API сервиса Практикум Домашка».
-    В качестве параметра функция получает ответ API,
-    приведённый к типам данных Python.
-    """
+    """Check API response structure."""
     if not isinstance(response, dict):
         raise exceptions.TypeResponseIsNotDictError(
             'В ответе API не найден словарь с данными.'
@@ -193,40 +196,109 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """
-    Проверка статуса работы.
-
-    Функция parse_status() извлекает из информации о конкретной домашней работе
-    статус этой работы. В качестве параметра функция получает только
-    один элемент из списка домашних работ. В случае успеха функция возвращает
-    подготовленную для отправки в Telegram строку, содержащую один из вердиктов
-    словаря HOMEWORK_VERDICTS.
-    """
+    """Extract and save both status versions."""
     for key in KEY_DICT_HOMEWORKS:
         if key not in homework:
             raise exceptions.UnknownStatusHomeworksError(
-                f'В ответе API, в словаре отсутствует ключ "{key}".'
+                f'Отсутствует ключ "{key}".'
             )
 
-    for key, value in HOMEWORK_VERDICTS.items():
-        if homework['status'] == key:
-            homework_name = homework['homework_name']
-            verdict = value
-    logger.debug('Функция parse_status выполнена.')
-    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+    homework_name = homework['homework_name']
+
+    # Технический статус (approved/reviewing/rejected)
+    status_code = homework['status']
+    status_text = HOMEWORK_VERDICTS[status_code]  # Читаемый текст
+
+    save_status_to_db(homework_name, status_code, status_text)
+
+    return f'Изменился статус работы "{homework_name}". {status_text}'
+
+
+def format_history(records):
+    """Format history records for display."""
+    return "\n".join(
+        f"⏰ {r[0]}\n📝 {r[1]}\n🔄 {r[2]}\n——————————"
+        for r in records
+    )
 
 
 def main():
-    """Основная логика работы бота."""
+    """Main bot logic."""
+
+    init_db()  # Initialize database
+
     if check_tokens():
         bot = TeleBot(token=TELEGRAM_TOKEN)
         timestamp = int(time.time() - FOR_MONTH)
         update_homework = dict()
         last_error_message = ''
 
+        @bot.message_handler(commands=['status'])
+        def send_bot_status(message):
+            """Send bot status with interactive keyboard."""
+            keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True)
+            keyboard.add(types.KeyboardButton('Проверить сейчас 🔄'))
+            keyboard.add(types.KeyboardButton('История статусов 📜'))
+
+            bot.send_message(
+                message.chat.id,
+                "🤖 Выберите действие:",
+                reply_markup=keyboard,
+            )
+
+        @bot.message_handler(func=lambda msg: msg.text == 'Проверить сейчас 🔄')
+        def force_check_status(message):
+            """Force immediate API check."""
+            try:
+                response = get_api_answer(int(time.time() - FOR_MONTH))
+                if check_response(response):
+                    homework = response['homeworks'][0]
+                    status_msg = parse_status(homework)
+                    bot.send_message(
+                        message.chat.id, f"🔍 Результат:\n{status_msg}")
+            except Exception as e:
+                bot.send_message(message.chat.id, f"❌ Ошибка: {e}")
+
+        @bot.message_handler(func=lambda msg: msg.text == 'История статусов 📜')
+        def show_history(message):
+            with closing(sqlite3.connect('bot_history.db')) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    SELECT timestamp, homework_name, status_text 
+                    FROM status_history 
+                    ORDER BY timestamp DESC 
+                    LIMIT 5
+                ''')
+                history = cursor.fetchall()
+
+            # Выводим читаемый статус (status_text)
+            bot.send_message(message.chat.id, format_history(history))
+
+            if not history:
+                bot.send_message(message.chat.id, "История пуста.")
+                return
+
+            history_text = "📜 Последние 5 статусов:\n\n"
+            for record in history:
+                time, name, status = record
+                history_text += (
+                    f"⏰ *{time}*\n"
+                    f"📌 *{name}* → `{status}`\n"
+                    f"————————————\n"
+                )
+
+            bot.send_message(
+                message.chat.id,
+                history_text,
+                parse_mode="Markdown"
+            )
+
+        # Start polling in background
+        bot.polling(non_stop=True, interval=0)
+
         while True:
             try:
-                logger.debug('Запрос к «API сервису Практикум Домашка».')
+                logger.debug('Запрос к API Яндекс.Практикума.')
                 response_dict = get_api_answer(timestamp=timestamp)
 
                 if (check_response(response_dict)
@@ -239,9 +311,12 @@ def main():
                         logger.info('Обновился статус домашки.')
                         send_message(bot=bot, message=new_status)
                         update_homework = last_homework
+                        BotState.last_api_check = datetime.now()
+                        BotState.last_error = None
             except BaseException as error:
                 message = f'Сбой в работе программы: {error}'
                 logger.error(message, exc_info=True)
+                BotState.last_error = message
                 if message != last_error_message:
                     send_message(bot, message)
                     last_error_message = message
