@@ -1,45 +1,70 @@
-# homework_bot
-python telegram bot
+# Homework Bot 🤖
 
-**Автор проекта:**<br>
-    *Давид Арутюнов*<br>
-    *Студент факультета Бэкенд. Когорта № 60*<br>
+[![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python&logoColor=white)](https://python.org)
+[![Telegram](https://img.shields.io/badge/Telegram-Bot-blue?logo=telegram)](https://core.telegram.org/bots)
+[![SQLite](https://img.shields.io/badge/SQLite-DB-lightgrey?logo=sqlite)](https://sqlite.org)
 
-**Электронная почта:**<br>
-    *david.arutyuno@gmail.com*<br>
+**Автор:** Давид Арутюнов  
+**Почта:** [david.arutyuno@gmail.com](mailto:david.arutyuno@gmail.com)  
+**Когорта:** Бэкенд-60, Яндекс.Практикум  
 
+## 🚀 Технологии
+- **Python 3.9+**
+- **Telegram Bot API** (`python-telegram-bot`)
+- **SQLite 3** (хранение истории статусов)
+- **Requests** (HTTP-запросы к API)
+- **Logging** (цветное логирование)
+- **Dotenv** (управление переменными окружения)
 
-## Описание проекта
+## 🔍 Описание
+Умный бот-ассистент для трекинга статусов домашних работ. Умеет:
 
-Бот ассистент, который:
-- раз в 10 минут опрашивает API сервиса Практикум Домашка и проверяет статус отправленной на ревью домашней работы;
-- при обновлении статуса анализирует ответ API и отправляет соответствующее уведомление в Telegram;
-- логирует свою работу и сообщает о важных проблемах сообщением в Telegram.
+✅ Автоматически проверять статус каждые 10 минут  
+✅ Присылать уведомления в Telegram об изменениях  
+✅ Хранить историю статусов в SQLite  
+✅ Показывать актуальный статус по запросу  
+✅ Логировать все события с цветовой разметкой  
 
-## Как локально развернуть проект
+## 🛠 Быстрый старт
 
-1. Клонируйте [этот репозиторий](https://github.com/DavidArutyuno/homework-bot) на свой компьютер
+```bash
+        # 1. Клонируйте репозиторий
+        git clone https://github.com/DavidArutyuno/homework-bot.git
+        cd homework-bot
 
-2. В директории **homework-bot** разверните и активируйте виртуальное окружение, обновите pip:
+        # 2. Настройте окружение
+        python -m venv venv
+        source venv/bin/activate  # Linux/Mac
+        venv\Scripts\activate    # Windows
 
-**Команда для Windows:**
-
-    python -m venv env
-    source env/Scripts/activate
-
-**Команда для Linux и macOS:**
-
-    python3 -m venv env
-    source env/bin/activate
-
-Убедитесь, что всё установлено правильно:
-
-    pip list
-
-3. Установите зависимости проекта:
-
+        # 3. Установите зависимости
         pip install -r requirements.txt
 
-4. Перейдите в директорию с файлом **homework.py** и запустите его:
+        # 4. Настройте переменные окружения
+        cp .env.example .env
+        # Заполните .env своими данными
 
+        # 5. Запустите бота
         python homework.py
+```
+
+⚙️ Функциональные клавиши
+
+    /status - Проверить текущий статус
+
+    Проверить сейчас 🔄 - Принудительный запрос к API
+
+    История статусов 📜 - Последние 5 записей
+
+📝 Логирование
+
+Бот использует многоуровневое логирование:
+
+    INFO - Успешные операции
+
+    WARNING - Незначительные проблемы
+
+    ERROR - Критические сбои
+
+Логи выводятся в консоль с цветовой маркировкой.
+
