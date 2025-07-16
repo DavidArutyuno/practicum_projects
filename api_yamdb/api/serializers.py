@@ -4,7 +4,6 @@ from django.core.validators import RegexValidator
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
@@ -20,7 +19,9 @@ class SignupSerializer(
     UsernameValidationMixin,
     serializers.Serializer
 ):
-    """Сериализация данных пользователя в процессе регистрации."""
+    """
+    Сериализация данных пользователя в процессе регистрации.
+    """
     email = serializers.EmailField(max_length=254, required=True)
     username = serializers.CharField(
         max_length=150,
@@ -33,7 +34,9 @@ class SignupSerializer(
     )
 
     def validate(self, attrs):
-        """Проверка уникальности email и username."""
+        """
+        Проверка уникальности email и username.
+        """
         email = attrs['email']
         username = attrs['username']
 
@@ -54,7 +57,9 @@ class SignupSerializer(
         return attrs
 
     def save(self):
-        """Создание или обновление пользователя."""
+        """
+        Создание или обновление пользователя.
+        """
         email = self.validated_data['email']
         username = self.validated_data['username']
 
@@ -76,7 +81,6 @@ class SignupSerializer(
 class TokenSerializer(serializers.Serializer):
     """
     Получение токена.
-
     Сериализация данных пользователя в процессе получения токена.
     Добавляем специальный код ошибки: code='not_found'.
     """
@@ -84,6 +88,9 @@ class TokenSerializer(serializers.Serializer):
     confirmation_code = serializers.CharField(write_only=True)
 
     def validate(self, data):
+        """
+        Проверка валидности username и confirmation_code.
+        """
         try:
             user = User.objects.get(username=data['username'])
         except User.DoesNotExist:
@@ -111,8 +118,7 @@ class UserSerializer(
     serializers.ModelSerializer
 ):
     """
-    Сериализация данных в процессе создания и обновления
-    пользователя администратором.
+    Сериализация данных в процессе создания и обновления пользователя администратором.
     """
     username = serializers.CharField(
         required=True,
@@ -132,6 +138,7 @@ class UserSerializer(
     )
 
     class Meta:
+        """Meta class for UserSerializer."""
         model = User
         fields = (
             'username', 'email', 'first_name',
@@ -144,8 +151,7 @@ class UserReadOrPatchSerializer(
     serializers.ModelSerializer
 ):
     """
-    Сериализация данных для процесса чтения и
-    частичного обновления профиля пользователя.
+    Сериализация данных для процесса чтения и частичного обновления профиля пользователя.
     """
     username = serializers.CharField(
         required=False,
@@ -167,12 +173,14 @@ class UserReadOrPatchSerializer(
         choices=settings.ROLE_CHOICES,
         required=False,
         error_messages={
-            'invalid_choice': 'Неверная роль.'
-            'Допустимые значения: user, moderator, admin'
+            'invalid_choice': (
+                'Неверная роль. Допустимые значения: user, moderator, admin'
+            )
         }
     )
 
     class Meta:
+        """Meta class for UserReadOrPatchSerializer."""
         model = User
         fields = (
             'username', 'email', 'first_name',
@@ -185,7 +193,9 @@ class MeSerializer(
     UsernameValidationMixin,
     serializers.ModelSerializer
 ):
-    """Сериализация данных для работы с собственным профилем."""
+    """
+    Сериализация данных для работы с собственным профилем.
+    """
     username = serializers.CharField(
         required=False,
         max_length=150,
@@ -204,6 +214,7 @@ class MeSerializer(
     )
 
     class Meta:
+        """Meta class for MeSerializer."""
         model = User
         fields = (
             'username', 'email', 'first_name',
@@ -215,18 +226,6 @@ class MeSerializer(
 class TitleSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Title.
-
-    Поля сериализуемой модели:
-        - name (str): Название произведения (обязательное поле,
-            не может быть длиннее 256 символов).
-        - year (int): Год создания произведения (обязательное поле,
-            не может быть в будущем).
-        - description (str): Описание произведения (необязательное поле).
-        - category (Category): Категория произведения (необязательное поле).
-        - genre (Genre): Жанры произведения (необязательное поле).
-
-    Методы:
-        - validate_year: Проверяет, что год не больше текущего года.
     """
     category = serializers.SlugRelatedField(
         slug_field='slug',
@@ -239,10 +238,14 @@ class TitleSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        """Meta class for TitleSerializer."""
         model = models.Title
         fields = ('id', 'name', 'year', 'description', 'category', 'genre')
 
     def validate_year(self, value):
+        """
+        Проверяет, что год не больше текущего года.
+        """
         if value > timezone.now().year:
             raise serializers.ValidationError('Год не может быть в будущем')
         return value
@@ -251,14 +254,9 @@ class TitleSerializer(serializers.ModelSerializer):
 class CategorySerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Category.
-
-    Поля сериализуемой модели:
-        - name (str): Название категории (обязательное поле,
-            не может быть длиннее 256 символов).
-        - slug (str): Слаг категории (обязательное поле,
-            не может быть длиннее 50 символов).
     """
     class Meta:
+        """Meta class for CategorySerializer."""
         model = models.Category
         fields = ('name', 'slug')
 
@@ -266,14 +264,9 @@ class CategorySerializer(serializers.ModelSerializer):
 class GenreSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Genre.
-
-    Поля сериализуемой модели:
-        - name (str): Название жанра (обязательное поле,
-            не может быть длиннее 256 символов).
-        - slug (str): Слаг жанра (обязательное поле,
-            не может быть длиннее 50 символов).
     """
     class Meta:
+        """Meta class for GenreSerializer."""
         model = models.Genre
         fields = ('name', 'slug')
 
@@ -287,6 +280,7 @@ class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.IntegerField(read_only=True)
 
     class Meta:
+        """Meta class for TitleReadSerializer."""
         model = models.Title
         fields = (
             'id', 'name', 'year', 'description',
@@ -297,14 +291,6 @@ class TitleReadSerializer(serializers.ModelSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Review.
-    Поля:
-        - title: Название произведения (read_only, slug_field='name')
-        - author: Имя пользователя (read_only, slug_field='username')
-        - score: Оценка (валидируется, должна быть от 0 до 10)
-        - Остальные поля соответствуют модели Review
-    Валидация:
-        - Оценка должна быть в диапазоне от 0 до 10
-        - Один пользователь может оставить только один отзыв на произведение
     """
     title = serializers.SlugRelatedField(
         slug_field='name',
@@ -316,6 +302,9 @@ class ReviewSerializer(serializers.ModelSerializer):
     )
 
     def validate_score(self, value):
+        """
+        Оценка должна быть в диапазоне от 0 до 10.
+        """
         if not (0 <= value <= 10):
             raise serializers.ValidationError(
                 'Оценка должна быть в диапазоне от 0 до 10.'
@@ -323,6 +312,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
+        """
+        Один пользователь может оставить только один отзыв на произведение.
+        """
         request = self.context.get('request')
         user = request.user
         title_id = self.context.get('view').kwargs.get('title_id')
@@ -340,6 +332,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         return attrs
 
     class Meta:
+        """Meta class for ReviewSerializer."""
         model = models.Review
         fields = '__all__'
 
@@ -350,9 +343,11 @@ class ReviewReadSerializer(serializers.ModelSerializer):
     """
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True)
+        read_only=True
+    )
 
     class Meta:
+        """Meta class for ReviewReadSerializer."""
         model = models.Review
         fields = ('id', 'text', 'author', 'score', 'pub_date')
 
@@ -360,11 +355,6 @@ class ReviewReadSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     """
     Сериализатор для модели Comment.
-    Поля:
-        - review: Текст отзыва, к которому относится комментарий
-          (read_only, slug_field='text')
-        - author: Имя пользователя (read_only, slug_field='username')
-        - Остальные поля соответствуют модели Comment
     """
     review = serializers.SlugRelatedField(
         slug_field='text',
@@ -376,6 +366,7 @@ class CommentSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+        """Meta class for CommentSerializer."""
         fields = '__all__'
         model = models.Comment
 
@@ -386,8 +377,10 @@ class CommentReadSerializer(serializers.ModelSerializer):
     """
     author = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True)
+        read_only=True
+    )
 
     class Meta:
+        """Meta class for CommentReadSerializer."""
         model = models.Comment
         fields = ('id', 'text', 'author', 'pub_date')
