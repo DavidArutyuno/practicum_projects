@@ -118,7 +118,8 @@ class UserSerializer(
     serializers.ModelSerializer
 ):
     """
-    Сериализация данных в процессе создания и обновления пользователя администратором.
+    Сериализация данных в процессе создания и обновления пользователя
+    администратором.
     """
     username = serializers.CharField(
         required=True,
@@ -151,7 +152,8 @@ class UserReadOrPatchSerializer(
     serializers.ModelSerializer
 ):
     """
-    Сериализация данных для процесса чтения и частичного обновления профиля пользователя.
+    Сериализация данных для процесса чтения и частичного обновления профиля
+    пользователя.
     """
     username = serializers.CharField(
         required=False,
