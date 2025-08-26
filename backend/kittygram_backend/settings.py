@@ -8,7 +8,7 @@ SECRET_KEY = 'django-insecure-cg6*%6d51ef8f#4!r3*$vmxm4)abgjw8mo!4y-q*uq1!4$-89$
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'localhost','89.169.175.171','127.0.0.1','173.19.0.3','www.kittygram777.ru','kittygram777.ru'
+    'localhost', '89.169.175.171', '127.0.0.1', '173.19.0.3', 'www.kittygram777.ru', 'kittygram777.ru'
 ]
 
 INSTALLED_APPS = [
@@ -106,7 +106,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated', 
+        'rest_framework.permissions.IsAuthenticated',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
