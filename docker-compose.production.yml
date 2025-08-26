@@ -7,7 +7,7 @@ volumes:
 
 services:
   db:
-    image: postgres:13
+    image: postgres:13.10
     env_file: .env
     volumes:
       - pg_data_kittygram:/var/lib/postgresql/data
@@ -16,7 +16,7 @@ services:
       - kittygram_network
 
   backend:
-    build: ./backend/
+    image: daviddockerunique/kittygram_backend
     env_file: .env
     volumes:
       - static_volume_kittygram:/backend_static
@@ -28,7 +28,7 @@ services:
       - kittygram_network
 
   frontend:
-    build: ./frontend/
+    image: daviddockerunique/kittygram_frontend
     env_file: .env
     command: cp -r /app/build/. /frontend_static/
     volumes:
@@ -37,7 +37,7 @@ services:
       - kittygram_network
 
   gateway:
-    build: ./nginx/
+    image: daviddockerunique/kittygram_gateway
     env_file: .env
     ports:
       - 9000:80
