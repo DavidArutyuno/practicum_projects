@@ -349,5 +349,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
         )
-        response['Content-Type'] = 'text/plain; charset=utf-8'
         return response
