@@ -16,4 +16,4 @@ class RecipesConfig(AppConfig):
         - Коротких ссылок для рецептов
         - Других автоматических действий при сохранении
         """
-        import recipes.signals
+        from recipes import signals  # noqa: F401
