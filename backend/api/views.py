@@ -234,7 +234,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = self.get_object()
 
         if request.method == 'POST':
-            # Добавление в избранное
             favorite, created = Favorite.objects.get_or_create(
                 user=request.user,
                 recipe=recipe
@@ -250,7 +249,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
-            # Удаление из избранного
             deleted = Favorite.objects.filter(
                 user=request.user,
                 recipe=recipe
@@ -273,10 +271,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated]
     )
     def shopping_cart(self, request, pk=None):
+        """"Корзина покупок."""
         recipe = self.get_object()
 
         if request.method == 'POST':
-            # Добавление в корзину покупок
             cart_item, created = ShoppingCart.objects.get_or_create(
                 user=request.user,
                 recipe=recipe
@@ -292,7 +290,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         elif request.method == 'DELETE':
-            # Удаление из корзины покупок
+            #
             deleted = ShoppingCart.objects.filter(
                 user=request.user,
                 recipe=recipe
@@ -334,12 +332,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             total_amount=Sum('amount')
         ).order_by('ingredient__name')
 
-        format = request.query_params.get('format', 'txt')
-
-        if format == 'pdf':
-            return self._generate_pdf_shopping_list(ingredients)
-        else:
-            return self._generate_text_shopping_list(ingredients)
+        return self._generate_text_shopping_list(ingredients)
 
     def _generate_text_shopping_list(self, ingredients):
         content = "Список покупок:\n\n"
@@ -350,36 +343,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f"{item['total_amount']}\n"
             )
 
-        response = HttpResponse(content, content_type='text/plain')
+        response = HttpResponse(
+            content, content_type='text/plain; charset=utf-8'
+        )
         response['Content-Disposition'] = (
             'attachment; filename="shopping_list.txt"'
         )
-        return response
-
-    def _generate_pdf_shopping_list(self, ingredients):
-        buffer = BytesIO()
-        p = canvas.Canvas(buffer)
-
-        p.drawString(100, 800, "Список покупок:")
-        y = 780
-        for item in ingredients:
-            if y < 100:
-                p.showPage()
-                y = 800
-            text = (
-                f"{item['ingredient__name']} "
-                f"({item['ingredient__measurement_unit']}) - "
-                f"{item['total_amount']}"
-            )
-            p.drawString(100, y, text)
-            y -= 20
-
-        p.showPage()
-        p.save()
-
-        buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = (
-            'attachment; filename="shopping_list.pdf"'
-        )
+        response['Content-Type'] = 'text/plain; charset=utf-8'
         return response

@@ -29,21 +29,24 @@ class Command(BaseCommand):
         parser.add_argument(
             'file_path',
             type=str,
-            help='Путь к файлу с данными'
+            help='The path to the data file.'
         )
         parser.add_argument(
             '--model',
             type=str,
             choices=['ingredient', 'tag', 'auto'],
             default='auto',
-            help='Тип модели для загрузки (auto - автоопределение)'
+            help=(
+                'Type of the model to load. Use "auto"'
+                'for automatic detection.'
+            )
         )
         parser.add_argument(
             '--format',
             type=str,
             choices=['json', 'csv', 'auto'],
             default='auto',
-            help='Формат файла (auto - автоопределение по расширению)'
+            help='Format of the file (auto for auto-detection)'
         )
 
     def handle(self, *args, **options):
@@ -52,11 +55,9 @@ class Command(BaseCommand):
         model_type = options['model']
         file_format = options['format']
 
-        # Автоопределение формата
         if file_format == 'auto':
             file_format = self._detect_file_format(file_path)
 
-        # Автоопределение модели
         if model_type == 'auto':
             model_type = self._detect_model_type(file_path, file_format)
 
@@ -67,12 +68,14 @@ class Command(BaseCommand):
                 self._load_tags(file_path, file_format)
 
             self.stdout.write(
-                self.style.SUCCESS('Данные успешно загружены')
+                self.style.SUCCESS(
+                    f'{model_type} data has been loaded successfully.'
+                )
             )
 
         except Exception as e:
             self.stdout.write(
-                self.style.ERROR(f'Ошибка загрузки: {str(e)}')
+                self.style.ERROR(f'Error loading data: {str(e)}')
             )
 
     def _detect_file_format(self, file_path):
@@ -83,7 +86,9 @@ class Command(BaseCommand):
         elif extension in ['.csv', '.txt']:
             return 'csv'
         else:
-            raise ValueError('Не удалось определить формат файла')
+            raise ValueError(
+                f'Failed to determine the file format: {extension}.'
+            )
 
     def _detect_model_type(self, file_path, file_format):
         """Определяет тип модели по структуре данных."""
@@ -94,16 +99,17 @@ class Command(BaseCommand):
                 else:
                     sample_data = next(csv.reader(f))
 
-                # Определяем по полям
                 if 'measurement_unit' in sample_data:
                     return 'ingredient'
                 elif 'slug' in sample_data:
                     return 'tag'
                 else:
-                    raise ValueError('Не удалось определить тип данных')
+                    raise ValueError(
+                        'Failed to determine the data type.'
+                    )
 
         except (IndexError, StopIteration):
-            raise ValueError('Файл пуст или имеет неверный формат')
+            raise ValueError('File is empty or has an invalid format.')
 
     def _load_ingredients(self, file_path, file_format):
         """Загружает ингредиенты из файла."""
@@ -118,7 +124,7 @@ class Command(BaseCommand):
         else:
             with open(file_path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
-                next(reader)  # Пропускаем заголовок
+                next(reader)
                 for row in reader:
                     if len(row) >= 2:
                         Ingredient.objects.get_or_create(
@@ -134,12 +140,12 @@ class Command(BaseCommand):
                 for item in data:
                     Tag.objects.get_or_create(
                         name=item['name'],
-                        slug=item.get('slug', '')  # slug опциональный
+                        slug=item.get('slug', '')
                     )
         else:
             with open(file_path, 'r', encoding='utf-8') as f:
                 reader = csv.reader(f)
-                next(reader)  # Пропускаем заголовок
+                next(reader)
                 for row in reader:
                     if len(row) >= 1:
                         Tag.objects.get_or_create(
