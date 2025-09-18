@@ -1,0 +1,38 @@
+version: '3.8'
+
+volumes:
+  pg_data_foodgram:
+  static_volume_foodgram:
+  media_volume_foodgram:
+
+services:
+  db:
+    image: postgres:13.10
+    env_file: .env
+    volumes:
+      - pg_data_foodgram:/var/lib/postgresql/data
+  backend:
+    image: daviddockerunique/foodgram_backend
+    env_file: .env
+    volumes:
+      - static_volume_foodgram:/backend_static
+      - media_volume_foodgram:/app/media
+    depends_on:
+      - db
+  frontend:
+    image: daviddockerunique/foodgram_frontend
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static_volume_foodgram:/frontend_static
+  nginx:
+    image: daviddockerunique/foodgram_nginx
+    env_file: .env
+    ports:
+      - 8000:80
+    volumes:
+      - static_volume_foodgram:/staticfiles
+      - media_volume_foodgram:/app/media
+    depends_on:
+      - backend
+      - frontend
