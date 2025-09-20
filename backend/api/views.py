@@ -16,7 +16,7 @@ from .filters import RecipeFilter
 from .mixins import FavoriteShoppingCartMixin
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
-                          RecipeListSerializer, RecipeMiniSerializer,
+                          RecipeListSerializer,
                           SetAvatarSerializer, SetPasswordSerializer,
                           TagSerializer, UserCreateSerializer, UserSerializer,
                           UserWithRecipesSerializer)
