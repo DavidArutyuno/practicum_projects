@@ -188,6 +188,9 @@ RECIPE_IMAGE_DIR = 'recipes/images/'
 
 LENGTH = 8
 
+# Serializers
+
+BATCH_SIZE = 100
 
 # Admin panel: Common settings
 

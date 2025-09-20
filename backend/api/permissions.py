@@ -18,22 +18,3 @@ class IsAuthorOrReadOnly(BasePermission):
                 obj.author == request.user
             )
         )
-
-
-class IsOwnerOrReadOnly(BasePermission):
-    """
-    Разрешает доступ:
-    - всем пользователям на безопасные методы (GET, HEAD, OPTIONS)
-    - только владельцу объекта на остальные методы
-
-    Пример использования:
-        permission_classes = [IsOwnerOrReadOnly]
-    """
-
-    def has_object_permission(self, request, view, obj):
-        return (
-            request.method in SAFE_METHODS
-            or (
-                obj.user == request.user
-            )
-        )

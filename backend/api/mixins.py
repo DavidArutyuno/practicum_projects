@@ -1,67 +1,52 @@
-from rest_framework import serializers
+from rest_framework import status
+from rest_framework.response import Response
 
-from recipes.models import Ingredient, Tag
+from .serializers import RecipeMiniSerializer
 
 
-class IngredientsValidationMixin:
-    """Миксин для проверки ингредиентов."""
+class FavoriteShoppingCartMixin:
+    """Миксин для обработки избранного и корзины покупок."""
 
-    def validate_ingredients(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                'Список ингредиентов не может быть пустым'
+    def _handle_favorite_shopping_cart(
+            self, request, pk, model_class, messages):
+        """
+        Универсальный обработчик для избранного и корзины.
+
+        Аргументы метода:
+            request: HTTP запрос
+            pk: ID рецепта
+            model_class: класс модели (Favorite или ShoppingCart)
+            messages: словарь с сообщениями {'post_error', 'delete_error'}
+        """
+        recipe = self.get_object()
+
+        if request.method == 'POST':
+            obj, created = model_class.objects.get_or_create(
+                user=request.user,
+                recipe=recipe
             )
-
-        ingredient_ids = [item['id'] for item in value]
-        existing_count = Ingredient.objects.filter(
-            id__in=ingredient_ids).count()
-
-        if existing_count != len(ingredient_ids):
-            raise serializers.ValidationError(
-                'Указаны несуществующие ингредиенты'
-            )
-
-        for ingredient_data in value:
-            amount = ingredient_data.get('amount')
-            if amount is None:
-                raise serializers.ValidationError(
-                    'Для каждого ингредиента должно быть указано количество'
+            if not created:
+                return Response(
+                    {'error': messages['post_error']},
+                    status=status.HTTP_400_BAD_REQUEST
                 )
 
+            serializer = RecipeMiniSerializer(
+                recipe, context={'request': request}
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        else:
             try:
-                amount_int = int(amount)
-                if amount_int < 1:
-                    raise serializers.ValidationError(
-                        'Количество ингредиента должно быть не менее 1'
-                    )
-            except (ValueError, TypeError):
-                raise serializers.ValidationError(
-                    'Количество должно быть числом'
+                obj = model_class.objects.get(
+                    user=request.user,
+                    recipe=recipe
                 )
+                obj.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
 
-        return value
-
-
-class TagsValidationMixin:
-    """Миксин для проверки тегов."""
-
-    def validate_tags(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                'Список тегов не может быть пустым'
-            )
-
-        existing_count = Tag.objects.filter(id__in=value).count()
-        if existing_count != len(value):
-            raise serializers.ValidationError('Указаны несуществующие теги')
-        return value
-
-
-class PasswordValidationMixin:
-    """Миксин для проверки пароля."""
-
-    def validate_current_password(self, value):
-        user = self.context['request'].user
-        if not user.check_password(value):
-            raise serializers.ValidationError('Неверный текущий пароль')
-        return value
+            except model_class.DoesNotExist:
+                return Response(
+                    {'error': messages['delete_error']},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
