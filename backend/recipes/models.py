@@ -116,6 +116,22 @@ class Recipe(CreatedModel):
         verbose_name = 'рецепт'
         verbose_name_plural = 'Рецепты'
 
+    def save(self, *args, **kwargs):
+        """
+        Явная логика для генерации коротких ссылок.
+
+        Проверяем, новый ли объект и генерируем короткую ссылку
+        после сохранения.
+        """
+        is_new = self._state.adding
+
+        super().save(*args, **kwargs)
+
+        if is_new and not self.short_link:
+            from core.utils import generate_short_hash
+            self.short_link = generate_short_hash(self.id)
+            self.save(update_fields=['short_link'])
+
     def __str__(self):
         return self.name
 
