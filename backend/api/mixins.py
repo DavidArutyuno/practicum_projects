@@ -36,17 +36,16 @@ class FavoriteShoppingCartMixin:
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        else:
-            try:
-                obj = model_class.objects.get(
-                    user=request.user,
-                    recipe=recipe
-                )
-                obj.delete()
-                return Response(status=status.HTTP_204_NO_CONTENT)
+        try:
+            obj = model_class.objects.get(
+                user=request.user,
+                recipe=recipe
+            )
+            obj.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-            except model_class.DoesNotExist:
-                return Response(
-                    {'error': messages['delete_error']},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        except model_class.DoesNotExist:
+            return Response(
+                {'error': messages['delete_error']},
+                status=status.HTTP_400_BAD_REQUEST
+            )

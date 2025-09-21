@@ -238,8 +238,7 @@ class RecipeViewSet(
 
     @action(
         detail=True,
-        methods=['post', 'delete'],
-        permission_classes=[IsAuthenticated]
+        methods=['post', 'delete']
     )
     def shopping_cart(self, request, pk=None):
         """Управление корзиной покупок."""
@@ -263,8 +262,7 @@ class RecipeViewSet(
 
     @action(
         detail=False,
-        methods=['get'],
-        permission_classes=[IsAuthenticated]
+        methods=['get']
     )
     def download_shopping_cart(self, request):
         ingredients = IngredientInRecipe.objects.filter(

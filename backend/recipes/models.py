@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.text import slugify
 
 from core.models import CreatedModel
+from core.utils import generate_short_hash
 
 
 User = get_user_model()
@@ -128,7 +129,6 @@ class Recipe(CreatedModel):
         super().save(*args, **kwargs)
 
         if is_new and not self.short_link:
-            from core.utils import generate_short_hash
             self.short_link = generate_short_hash(self.id)
             self.save(update_fields=['short_link'])
 
