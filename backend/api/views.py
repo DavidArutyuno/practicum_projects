@@ -219,6 +219,8 @@ class RecipeViewSet(
         elif self.action in (
                 ['favorite', 'shopping_cart', 'download_shopping_cart']):
             return [IsAuthenticated()]
+        elif self.action in ['update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsAuthorOrReadOnly()]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
