@@ -156,5 +156,5 @@ jobs:
         token: ${{ secrets.TELEGRAM_TOKEN }}
         message: |
           foodgram deployed successfully!
-          Domain: kittyram777.ru
+          Domain: kittygram777.ru
           Tests passed, images updated
