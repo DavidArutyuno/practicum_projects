@@ -59,7 +59,8 @@ async def upload_file_and_get_url(session, image):
         ) as response:
             if response.status != 200:
                 print(
-                    f'Ошибка получения upload URL для {filename}: {response.status}')
+                    f'Ошибка получения upload URL'
+                    f'для {filename}: {response.status}')
                 return {}
             data = await response.json()
             upload_url = data.get('href')
