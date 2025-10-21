@@ -133,3 +133,16 @@ dmypy.json
 .deployment
 
 .idea
+
+
+yandex_disk_sinxro.py
+1_request_yandex_disk_primer.py
+2_request_yandex_disk_url_for_load.py
+3_request_yandex_disk_load.py
+4_request_yandex_disk_get_link_.py
+shortener copy.html
+
+Логи тестов.txt
+Загрузка в синхронном режиме.PNG
+
+html_back/
