@@ -12,7 +12,7 @@ from .utils import (
     merge_links_dicts
 )
 
-BASE_URL = app.config.get('BASE_URL')
+BASE_URL = app.config.get('BASE_URL', 'http://localhost')
 
 
 @app.route('/', methods=['GET', 'POST'])
