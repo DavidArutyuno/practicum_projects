@@ -6,5 +6,5 @@ class Config(object):
     SECRET_KEY = os.getenv('SECRET_KEY')
     DISK_TOKEN = os.getenv('DISK_TOKEN')
     FLASK_RUN_PORT = os.getenv('FLASK_RUN_PORT')
-    SERVER_NAME = 'localhost'
-    PREFERRED_URL_SCHEME = 'http'
+    BASE_URL = os.getenv('BASE_URL')
+    MAX_LENGTH = 16

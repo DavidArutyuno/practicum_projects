@@ -1,5 +1,5 @@
 import asyncio
-import urllib
+from http import HTTPStatus
 
 from flask import abort, flash, redirect, render_template
 
@@ -7,7 +7,14 @@ from . import app, db
 from .forms import GenerateLinkForm, LoadFilesForm
 from .models import URLMap
 from .yandex_disk import async_upload_files_to_YaDISK
-from .utils import get_unique_short_id
+from .utils import (
+    create_short_links_for_files,
+    get_unique_short_id,
+    merge_links_dicts
+)
+
+BASE_URL = app.config.get('BASE_URL')
+# FLASK_RUN_PORT = app.config.get('FLASK_RUN_PORT', 5000)
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -39,7 +46,7 @@ def index_view():
         db.session.add(url_map)
         db.session.commit()
 
-        short_link = f'http://localhost/{short_id}'
+        short_link = f'{BASE_URL}/{short_id}'
 
         flash(
             'Ваша новая ссылка готова:',
@@ -56,30 +63,18 @@ def index_view():
 def load_file_view():
     form = LoadFilesForm()
     if form.validate_on_submit():
-        print(f"Получены файлы: {[f.filename for f in form.files.data]}")
-        print(f"Токен: {app.config.get('DISK_TOKEN', 'NOT SET')}")
-
-        list_links = asyncio.run(
+        # Загружаем файлы на Яндекс.Диск
+        yandex_links_list = asyncio.run(
             async_upload_files_to_YaDISK(form.files.data)
         )
 
-        if list_links:
+        if yandex_links_list:
             flash('Файлы загружены!', 'success')
 
-            # Создаем короткие ссылки для каждого файла
-            file_links = {}
-            for dict in list_links:
-                for filename, link in dict.items():
-                    short_id = get_unique_short_id()
-                    original = link
-                    url_map = URLMap(
-                        original=original,
-                        short=short_id
-                    )
-                    db.session.add(url_map)
-                    db.session.commit()
-                    short_link = f'http://localhost/{short_id}'
-                    file_links[filename] = short_link
+            # Объединяем словари и создаем короткие ссылки
+            merged_links = merge_links_dicts(yandex_links_list)
+            file_links = create_short_links_for_files(merged_links)
+
             return render_template(
                 'loader.html', form=form, file_links=file_links
             )
@@ -91,14 +86,5 @@ def load_file_view():
 
 @app.route('/<string:short_link>', methods=['GET'])
 def redirect_on_short_link_view(short_link):
-    url_map = URLMap.query.filter_by(short=short_link).first()
-    if not url_map:
-        abort(404)
-
-    original_url = url_map.original
-    if '%' in original_url:
-        try:
-            original_url = urllib.parse.unquote(original_url)
-        except Exception as e:
-            print(f"Ошибка декодирования URL: {e}")
-    return redirect(original_url)
+    url_map = URLMap.query.filter_by(short=short_link).first_or_404()
+    return redirect(url_map.original)

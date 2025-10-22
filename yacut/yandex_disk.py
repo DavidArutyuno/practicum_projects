@@ -44,7 +44,6 @@ async def upload_file_and_get_url(session, image):
     """
     start_time = time.time()
     filename = image.filename
-    # filename = urllib.parse.quote(image.filename, safe='')
 
     path = f'app:/{filename}'
 
