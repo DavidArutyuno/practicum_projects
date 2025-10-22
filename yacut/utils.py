@@ -6,6 +6,7 @@ from .models import URLMap
 
 
 BASE_URL = app.config.get('BASE_URL')
+# FLASK_RUN_PORT = app.config.get('FLASK_RUN_PORT', 5000)
 
 
 def get_unique_short_id():
