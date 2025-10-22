@@ -12,8 +12,8 @@ from .utils import (
     merge_links_dicts
 )
 
+
 BASE_URL = app.config.get('BASE_URL', 'http://localhost')
-FLASK_RUN_PORT = app.config.get('FLASK_RUN_PORT', 5000)
 
 
 @app.route('/', methods=['GET', 'POST'])
