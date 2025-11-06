@@ -125,10 +125,10 @@ def pep(session):
             # Парсим детальный PEP по ссылкам
             if a_tag and a_tag.text.strip().isdigit():
                 href = a_tag['href']
-                pep_link = urljoin(PEP_DOC_URL, href)
-                soup, _ = get_soup(
+                soup, pep_link = get_soup(
                     session=session,
-                    doc_url=pep_link
+                    doc_url=PEP_DOC_URL,
+                    tail_url=href
                 )
                 dl = soup.find(
                     'dl', attrs={'class': 'rfc2822 field-list simple'})
