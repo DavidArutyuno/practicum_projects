@@ -99,7 +99,7 @@ def download(session):
 
 
 def pep(session):
-    soup, downloads_url = get_soup(
+    soup, _ = get_soup(
         session=session,
         doc_url=PEP_DOC_URL,
         tail_url='download.html'
