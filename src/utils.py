@@ -4,7 +4,7 @@ from urllib.parse import urljoin
 from requests import RequestException
 from bs4 import BeautifulSoup
 
-from constants import EXPECTED_STATUS, FEATURES
+from constants import ENCODING, EXPECTED_STATUS, FEATURES
 from exceptions import ParserFindTagException
 
 
@@ -12,7 +12,7 @@ def get_response(session, url):
     """Перехват ошибки RequestException."""
     try:
         response = session.get(url)
-        response.encoding = 'utf-8'
+        response.encoding = ENCODING
         return response
     except RequestException:
         logging.exception(
