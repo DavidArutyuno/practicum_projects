@@ -1,9 +1,11 @@
 import logging
+from urllib.parse import urljoin
 
 from requests import RequestException
-from exceptions import ParserFindTagException
+from bs4 import BeautifulSoup
 
-from constants import EXPECTED_STATUS
+from constants import EXPECTED_STATUS, FEATURES
+from exceptions import ParserFindTagException
 
 
 def get_response(session, url):
@@ -17,6 +19,15 @@ def get_response(session, url):
             f'Возникла ошибка при загрузке страницы {url}',
             stack_info=True
         )
+
+
+def get_soup(session, doc_url, tail_url=''):
+    url = urljoin(doc_url, tail_url)
+    response = get_response(session, url)
+    if response is None:
+        return
+    for_soup = BeautifulSoup(response.text, features=FEATURES)
+    return for_soup, url
 
 
 def find_tag(soup, tag, attrs=None):

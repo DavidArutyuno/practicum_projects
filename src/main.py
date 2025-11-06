@@ -8,17 +8,18 @@ from tqdm import tqdm
 
 from configs import configure_argument_parser, configure_logging
 from constants import BASE_DIR, MAIN_DOC_URL, PEP_DOC_URL
+from exceptions import ParserFindTagException
 from outputs import control_output
-from utils import find_tag, get_response, parse_pep_field_list
+from utils import find_tag, get_response, get_soup, parse_pep_field_list
 
 
 def whats_new(session):
-    whats_new_url = urljoin(MAIN_DOC_URL, 'whatsnew/')
-    response = get_response(session, whats_new_url)
-    if response is None:
-        return
+    soup, whats_new_url = get_soup(
+        session=session,
+        doc_url=MAIN_DOC_URL,
+        tail_url='whatsnew/'
+    )
 
-    soup = BeautifulSoup(response.text, features='lxml')
     main_div = find_tag(soup, 'section', attrs={'id': 'what-s-new-in-python'})
     div_with_ul = find_tag(main_div, 'div', attrs={'class': 'toctree-wrapper'})
     sections_by_python = div_with_ul.find_all(
@@ -45,11 +46,11 @@ def whats_new(session):
 
 
 def latest_versions(session):
-    response = get_response(session, MAIN_DOC_URL)
-    if response is None:
-        return
+    soup, _ = get_soup(
+        session=session,
+        doc_url=MAIN_DOC_URL
+    )
 
-    soup = BeautifulSoup(response.text, features='lxml')
     sidebar = find_tag(soup, 'div', {'class': 'sphinxsidebarwrapper'})
     ul_tags = sidebar.find_all('ul')
 
@@ -58,7 +59,8 @@ def latest_versions(session):
             a_tags = ul.find_all('a')
             break
     else:
-        raise Exception('Ничего не нашлось')
+        raise ParserFindTagException(
+            'latest_versions: в тегах "ul" не найден раздел "All versions"')
 
     results = [('Ссылка на документацию', 'Версия', 'Статус')]
     pattern = r'Python (?P<version>\d\.\d+) \((?P<status>.*)\)'
@@ -76,20 +78,17 @@ def latest_versions(session):
 
 
 def download(session):
-    downloads_url = urljoin(MAIN_DOC_URL, 'download.html')
-    response = get_response(session, downloads_url)
-    if response is None:
-        return
-
-    soup = BeautifulSoup(response.text, features='lxml')
+    soup, downloads_url = get_soup(
+        session=session,
+        doc_url=MAIN_DOC_URL,
+        tail_url='download.html'
+    )
     table_tag = find_tag(soup, 'table', {'class': 'docutils'})
     epub_tag = find_tag(table_tag, 'a', {'href': re.compile(r'.+html\.zip$')})
     epub_link = epub_tag['href']
     archive_url = urljoin(downloads_url, epub_link)
     filename = archive_url.split('/')[-1]
     downloads_dir = BASE_DIR / 'downloads'
-    print(BASE_DIR)
-    print(downloads_dir)
     downloads_dir.mkdir(exist_ok=True)
     archive_path = downloads_dir / filename
     response = session.get(archive_url)
@@ -106,6 +105,11 @@ def pep(session):
 
     soup = BeautifulSoup(response.text, features='lxml')
 
+    soup, downloads_url = get_soup(
+        session=session,
+        doc_url=PEP_DOC_URL,
+        tail_url='download.html'
+    )
     table_tags = soup.find_all(
         'table', attrs={'class': 'pep-zero-table docutils align-default'})
 
@@ -128,10 +132,10 @@ def pep(session):
             if a_tag and a_tag.text.strip().isdigit():
                 href = a_tag['href']
                 pep_link = urljoin(PEP_DOC_URL, href)
-
-                response = session.get(pep_link)
-                response.encoding = 'utf-8'
-                soup = BeautifulSoup(response.text, features='lxml')
+                soup, _ = get_soup(
+                    session=session,
+                    doc_url=pep_link
+                )
                 dl = soup.find(
                     'dl', attrs={'class': 'rfc2822 field-list simple'})
                 details_pep.append(
@@ -158,7 +162,6 @@ def pep(session):
 
     results = [('Статус', 'Количество')]
     for key, value in statistics_status.items():
-        print(key, value)
         results.append((key, str(value)))
 
     return results
@@ -173,8 +176,6 @@ MODE_TO_FUNCTION = {
 
 
 def main():
-    print(BASE_DIR)
-
     configure_logging()
 
     logging.info('Парсер запущен!')

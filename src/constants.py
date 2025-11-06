@@ -14,3 +14,7 @@ EXPECTED_STATUS = {
     'W': ('Withdrawn',),
     '': ('Draft', 'Active'),
 }
+MAX_BYTES = 10 ** 6
+BACKUP_COUNT = 5
+ENCODING = 'utf-8'
+FEATURES = 'lxml'
