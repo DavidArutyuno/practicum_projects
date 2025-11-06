@@ -1,7 +1,5 @@
-# utils.py
 import logging
 
-# Импорт базового класса ошибок библиотеки request.
 from requests import RequestException
 from exceptions import ParserFindTagException
 
@@ -35,7 +33,6 @@ def parse_pep_field_list(soup, pre_status, link):
     """Парсит всю field-list таблицу PEP."""
     field_list = {}
 
-    # Находим все dt теги в field-list
     dt_tags = soup.select('dl.field-list dt')
 
     for dt_tag in dt_tags:
