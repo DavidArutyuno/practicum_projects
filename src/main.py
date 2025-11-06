@@ -99,12 +99,6 @@ def download(session):
 
 
 def pep(session):
-    response = get_response(session, PEP_DOC_URL)
-    if response is None:
-        return
-
-    soup = BeautifulSoup(response.text, features='lxml')
-
     soup, downloads_url = get_soup(
         session=session,
         doc_url=PEP_DOC_URL,
