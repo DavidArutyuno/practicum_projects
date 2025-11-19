@@ -22,7 +22,7 @@
 1. Клонируйте репозиторий на свой компьютер.
 
     ```bash
-    git clone <ссылка-на-репозиторий>
+    git clone https://github.com/DavidArutyuno/scrapy_parser_pep
     cd pep_parse
     ```
 
