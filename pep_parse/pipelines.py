@@ -31,30 +31,23 @@ class PepParsePipeline:
         status = item.get('status', 'Unknown')
         self.status_count[status] += 1
         self.total_count += 1
-        # Возвращаем item, чтобы обработка данных не прерывалась.
         return item
 
     def close_spider(self, spider):
         """Вызывается при завершении работы паука."""
-        # Создаем директорию results если её нет
         os.makedirs('results', exist_ok=True)
 
-        # Формируем имя файла
         timestamp = datetime.now().strftime(DATETIME_FORMAT)
         filename = RESULTS_DIR / f'status_summary_{timestamp}.csv'
 
-        # Записываем данные в CSV
         with open(
             filename, 'w', newline='', encoding=FEED_EXPORT_ENCODING
         ) as csvfile:
             writer = csv.writer(csvfile)
-
-            # Заголовок
             writer.writerow(['Статус', 'Количество'])
-
-            # Данные по статусам
-            for status, count in sorted(self.status_count.items()):
-                writer.writerow([status, count])
-
-            # Итоговая строка
-            writer.writerow(['Total', self.total_count])
+            rows_to_write = [
+                [status, count]
+                for status, count in sorted(self.status_count.items())
+            ]
+            rows_to_write.append(['Total', self.total_count])
+            writer.writerows(rows_to_write)
