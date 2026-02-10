@@ -67,7 +67,8 @@ async def invest_in_project(
     is_donation: bool = False,
 ) -> Tuple[Optional[CharityProject], Optional[Donation]]:
     """
-    Универсальная функция для создания объекта и запуска процесса инвестирования.
+    Универсальная функция для создания объекта и
+    запуска процесса инвестирования.
     """
     if is_donation:
         db_obj = await donation_crud.create(obj_in, session)
