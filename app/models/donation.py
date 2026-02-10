@@ -10,4 +10,5 @@ class Donation(CharityBase):
 
     Каждый объект этой модели хранит данные об отдельном пожертвовании.
     """
+
     comment = Column(String)

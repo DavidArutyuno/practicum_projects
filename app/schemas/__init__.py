@@ -1,10 +1,10 @@
 from app.schemas.charity_project import (
-    CharityProjectCreate,
-    CharityProjectDB,
-    CharityProjectUpdate,
+    CharityProjectCreate,  # noqa
+    CharityProjectDB,  # noqa
+    CharityProjectUpdate,  # noqa
 )  # noqa
 from app.schemas.donation import (
-    DonationCreate,
-    DonationDB,
-    DonationFullInfoDB,
+    DonationCreate,  # noqa
+    DonationDB,  # noqa
+    DonationFullInfoDB,  # noqa
 )  # noqa

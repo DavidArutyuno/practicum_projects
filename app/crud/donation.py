@@ -1,6 +1,4 @@
 """CRUD операции для пожертвований."""
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +13,7 @@ class CRUDDonation(CRUDBase):
     ):
         open_donations = await session.execute(
             select(Donation).where(
-                Donation.fully_invested == False
+                Donation.fully_invested.is_(False)
             ).order_by(Donation.create_date)
         )
         return open_donations.scalars().all()

@@ -11,6 +11,7 @@ class CharityBase(CommonMixin, Base):
     Общий родительский класс (абстрактный) для моделей CharityProject и
     Donation с набором одинаковых полей.
     """
+
     __abstract__ = True
 
     full_amount = Column(Integer, nullable=False)

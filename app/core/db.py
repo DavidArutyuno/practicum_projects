@@ -12,7 +12,6 @@ from app.core.config import settings
 
 class Base(DeclarativeBase):
     """Базовый класс от которого будем наследовать все модели проекта."""
-    pass
 
 
 class CommonMixin:
@@ -35,12 +34,13 @@ class CommonMixin:
 
 engine = create_async_engine(settings.database_url)
 
-"""Создаём асинхронный генератор сессий."""
 AsyncSessionLocal = async_sessionmaker(engine, expire_on_commit=False)
 
 
 async def get_async_session():
     """
+    Dependency для получения асинхронной сессии базы данных.
+
     При каждом вызове get_async_session()
     из AsyncSessionLocal извлекается сессия и возвращается
     тому, кто её запросил.

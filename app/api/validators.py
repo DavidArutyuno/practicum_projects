@@ -48,7 +48,8 @@ async def check_project_invested_amount(
     if new_full_amount < charity_project.invested_amount:
         raise HTTPException(
             status_code=400,
-            detail='Нельзя установить значение full_amount меньше уже вложенной суммы.'
+            detail='Нельзя установить значение full_amount'
+            ' меньше уже вложенной суммы.'
         )
 
 

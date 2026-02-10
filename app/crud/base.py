@@ -68,8 +68,8 @@ class CRUDBase:
             if field in update_data:
                 setattr(db_obj, field, update_data[field])
 
-        # Проверяем, не нужно ли закрыть проект после обновления
-        if hasattr(db_obj, 'full_amount') and hasattr(db_obj, 'invested_amount'):
+        if (hasattr(db_obj, 'full_amount') and
+                hasattr(db_obj, 'invested_amount')):
             if (db_obj.invested_amount >= db_obj.full_amount and
                     not db_obj.fully_invested):
                 db_obj.fully_invested = True
