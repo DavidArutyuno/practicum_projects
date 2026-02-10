@@ -1,0 +1,1 @@
+from app.models import charity_project, donation # noqa
