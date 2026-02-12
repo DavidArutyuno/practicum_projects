@@ -13,13 +13,38 @@ from app.crud.donation import donation_crud
 from app.models import CharityProject, Donation
 
 
+def remaining(obj) -> int:
+    """
+    Остаток.
+
+    для проекта - сколько нужно собрать.
+    для доната - сколько можно потратить.
+    """
+    return obj.full_amount - obj.invested_amount
+
+
+def invest_amount(obj, amount: int) -> None:
+    """Инвестирует указанную сумму в объект."""
+    obj.invested_amount += amount
+
+
+async def close_if_complete(obj):
+    """Закрывает объект и возвращает True, если он был закрыт."""
+    if obj.invested_amount >= obj.full_amount and not obj.fully_invested:
+        obj.fully_invested = True
+        obj.close_date = datetime.now()
+        return True
+    return False
+
+
 async def execute_investment_process(
     session: AsyncSession,
 ) -> None:
     """
-    Функция распределяет неинвестированные пожертвования по открытым проектам.
-    project_remaining - доступные суммы.
-    investment_amount - сумма для инвестирования.
+    Распределяет пожертвования по проектам.
+
+    need - сколько нужно проекту.
+    have - сколько есть в пожертвовании.
     """
     open_projects = await charity_project_crud.get_open_projects(session)
     open_donations = await donation_crud.get_open_donations(session)
@@ -37,22 +62,21 @@ async def execute_investment_process(
         project = open_projects[project_index]
         donation = open_donations[donation_index]
 
-        project_remaining = project.full_amount - project.invested_amount
-        donation_remaining = donation.full_amount - donation.invested_amount
+        # Сколько нужно проекту и сколько есть в пожертвовании
+        need = remaining(project)
+        have = remaining(donation)
 
-        investment_amount = min(project_remaining, donation_remaining)
+        # Вычисляем сумму инвестирования
+        investment = min(need, have)
 
-        project.invested_amount += investment_amount
-        donation.invested_amount += investment_amount
+        # Инвестируем
+        invest_amount(project, investment)
+        invest_amount(donation, investment)
 
-        if project.invested_amount >= project.full_amount:
-            project.fully_invested = True
-            project.close_date = datetime.now()
+        # Проверяем закрытие
+        if await close_if_complete(project):
             project_index += 1
-
-        if donation.invested_amount >= donation.full_amount:
-            donation.fully_invested = True
-            donation.close_date = datetime.now()
+        if await close_if_complete(donation):
             donation_index += 1
 
         session.add(project)

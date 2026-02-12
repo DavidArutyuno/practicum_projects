@@ -46,7 +46,6 @@ class CRUDBase:
         session: AsyncSession,
     ):
         """Универсальный метод для добавления записи в базу."""
-        print(obj_in)
         obj_in_data = obj_in.model_dump()
         db_obj = self.model(**obj_in_data)
         session.add(db_obj)
