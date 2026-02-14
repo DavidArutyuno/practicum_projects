@@ -86,7 +86,7 @@ async def check_project_before_delete(
         )
     if charity_project.invested_amount > 0:
         raise HTTPException(
-            status_code=400,
+            status_code=HTTPStatus.BAD_REQUEST,
             detail='В проект были внесены средства, не подлежит удалению!'
         )
     return charity_project
