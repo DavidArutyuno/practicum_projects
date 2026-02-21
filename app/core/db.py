@@ -21,6 +21,7 @@ convention = {
 
 class Base(DeclarativeBase):
     """Базовый класс от которого будем наследовать все модели проекта."""
+
     metadata = MetaData(naming_convention=convention)
 
 
