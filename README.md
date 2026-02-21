@@ -40,7 +40,7 @@ QRKot - это благотворительный фонд, который со�
 
 ```bash
 git clone https://github.com/DavidArutyuno/cat-charity-1.git
-cd qrkot
+cd cat-charity-1
 ```
 
 2. Настройка виртуального окружения
