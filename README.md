@@ -1,7 +1,7 @@
 # cat-charity-2 
 ## 🐱 Благотворительный фонд поддержки котиков QRKot
 
-![Python](https://img.shields.io/badge/Python-3.9+-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.12+-blue.svg)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.104+-green.svg)
 ![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-orange.svg)
 
@@ -41,8 +41,8 @@ QRKot - это благотворительный фонд, который со�
 1. Клонирование репозитория
 
 ```bash
-git clone https://github.com/DavidArutyuno/cat-charity-1.git
-cd qrkot
+git clone https://github.com/DavidArutyuno/cat-charity-2.git
+cd cat-charity-2
 ```
 
 2. Настройка виртуального окружения
@@ -106,13 +106,16 @@ qrkot/
 │   ├── api/                 # Роутеры API
 │   │   ├── endpoints/       # Эндпоинты
 │   │   │   ├── charity_project.py
-│   │   │   └── donation.py
+│   │   │   ├── donation.py
+│   │   │   └── user.py
 │   │   ├── routers.py       # Объединение роутеров
 │   │   └── validators.py    # Валидаторы запросов
 │   ├── core/                # Основные настройки
 │   │   ├── base.py          # Импорты класса Base и всех моделей для Alembic
 │   │   ├── config.py        # Конфигурация приложения
-│   │   └── db.py            # Подключение к БД
+│   │   ├── db.py            # Подключение к БД
+│   │   ├── init_db.py       # Автоматическое создание первого superuser
+│   │   └── user.py          # Управление пользователями
 │   ├── crud/                # CRUD операции
 │   │   ├── base.py          # Базовый CRUD класс
 │   │   ├── charity_project.py
@@ -120,10 +123,12 @@ qrkot/
 │   ├── models/              # ORM модели
 │   │   ├── base.py          # Базовый абстрактный класс
 │   │   ├── charity_project.py
-│   │   └── donation.py
+│   │   ├── donation.py
+│   │   └── user.py          # Модель пользователей
 │   ├── schemas/             # Pydantic схемы
 │   │   ├── charity_project.py
-│   │   └── donation.py
+│   │   ├── donation.py
+│   │   └── user.py          # Схема пользователей
 │   ├── services/            # Бизнес-логика
 │   │   └── investments.py    # Логика распределения инвестиций
 │   └── main.py              # Точка входа приложения
