@@ -13,8 +13,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.db import get_async_session
+from app.core.logger import get_logger
 from app.models.user import User
 from app.schemas.user import UserCreate
+
+
+MIN_PASSWORD_LENGTH = 3
+JWT_TOKEN_LIFETIME_SECONDS = 3600  # 1 час
+
+logger = get_logger(__name__)
 
 
 async def get_user_db(
@@ -26,7 +33,10 @@ bearer_transport = BearerTransport(tokenUrl='auth/jwt/login')
 
 
 def get_jwt_strategy() -> JWTStrategy:
-    return JWTStrategy(secret=settings.secret, lifetime_seconds=3600)
+    return JWTStrategy(
+        secret=settings.secret,
+        lifetime_seconds=JWT_TOKEN_LIFETIME_SECONDS
+    )
 
 
 auth_backend = AuthenticationBackend(
@@ -37,31 +47,39 @@ auth_backend = AuthenticationBackend(
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
+    WARNING_TEMPLATE = '⚠️ Валидация пароля провалена для {}: {}'
+
     async def validate_password(
         self,
         password: str,
         user: Union[UserCreate, User],
     ) -> None:
-        if len(password) < 3:
-            error = 'Пароль должен содержать не менее 3 символов'
-            raise InvalidPasswordException(
-                reason=error
+
+        if len(password) < MIN_PASSWORD_LENGTH:
+            error_msg = (
+                f'Пароль должен содержать не менее {MIN_PASSWORD_LENGTH} '
+                f'символов (сейчас {len(password)})'
             )
+            logger.warning(self.WARNING_TEMPLATE.format(user.email, error_msg))
+            raise InvalidPasswordException(reason=error_msg)
+
         if user.email in password:
-            error = 'Пароль не может содержать ваш email'
-            raise InvalidPasswordException(
-                reason=error
-            )
+            error_msg = 'Пароль не может содержать ваш email'
+            logger.warning(self.WARNING_TEMPLATE.format(user.email, error_msg))
+            raise InvalidPasswordException(reason=error_msg)
+
+        logger.debug(f'Пароль для {user.email} успешно прошёл валидацию')
 
     async def on_after_register(
-            self, user: User, request: Optional[Request] = None
+        self,
+        user: User,
+        request: Optional[Request] = None
     ):
-        """
-        Метод, описывающий действия после успешной регистрации пользователя.
-        Здесь можно настроить отправку письма или переадресацию пользователя
-        на определённую страницу.
-        """
-        print(f'Пользователь {user.email} зарегистрирован.')
+        """Действия после регистрации."""
+        logger.info(
+            f'✅ Новый пользователь зарегистрирован: '
+            f'ID={user.id}, Email={user.email}'
+        )
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):
