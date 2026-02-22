@@ -55,10 +55,12 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         user: Union[UserCreate, User],
     ) -> None:
 
-        if len(password) < MIN_PASSWORD_LENGTH:
+        password_length = len(password)
+
+        if password_length < MIN_PASSWORD_LENGTH:
             error_msg = (
                 f'Пароль должен содержать не менее {MIN_PASSWORD_LENGTH} '
-                f'символов (сейчас {len(password)})'
+                f'символов (сейчас {password_length})'
             )
             # Исправление PIE803: используем % formatting
             logger.warning(
