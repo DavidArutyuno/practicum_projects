@@ -34,20 +34,27 @@ async def create_user(
                             is_superuser=is_superuser
                         )
                     )
+                    # Исправление PIE803:
+                    # используем % formatting вместо f-string
                     logger.info(
-                        f'✅ Успешно создан суперпользователь с email: {email}'
+                        '✅ Успешно создан суперпользователь с email: %s',
+                        email
                     )
-    # except UserAlreadyExists:
-    #     pass
     except UserAlreadyExists:
+        # Исправление PIE803: используем % formatting вместо f-string
         logger.info(
-            f'ℹ️ Суперпользователь с email {email} уже существует в БД'
+            'ℹ️ Суперпользователь с email %s уже существует в БД',
+            email
         )
         return None
 
     except Exception as e:
+        # Исправление PIE803: используем % formatting вместо f-string
+        # Исправление FCS100: разбиваем сложный f-string
         logger.error(
-            f'❌ Ошибка создания суперпользователя с email {email}: {str(e)}'
+            '❌ Ошибка создания суперпользователя с email %s: %s',
+            email,
+            str(e)
         )
         raise
 
@@ -63,6 +70,6 @@ async def create_first_superuser():
         )
     else:
         logger.warning(
-            '⚠️ Настройки первого суперпользователя не указаны в .env файле. '
+            '⚠️ Настройки суперпользователя не указаны в .env файле. '
             'Суперпользователь не будет создан автоматически.'
         )

@@ -47,7 +47,7 @@ auth_backend = AuthenticationBackend(
 
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
-    WARNING_TEMPLATE = '⚠️ Валидация пароля провалена для {}: {}'
+    WARNING_TEMPLATE = '⚠️ Валидация пароля провалена для %s: %s'
 
     async def validate_password(
         self,
@@ -60,15 +60,25 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
                 f'Пароль должен содержать не менее {MIN_PASSWORD_LENGTH} '
                 f'символов (сейчас {len(password)})'
             )
-            logger.warning(self.WARNING_TEMPLATE.format(user.email, error_msg))
+            # Исправление PIE803: используем % formatting
+            logger.warning(
+                self.WARNING_TEMPLATE,
+                user.email,
+                error_msg
+            )
             raise InvalidPasswordException(reason=error_msg)
 
         if user.email in password:
             error_msg = 'Пароль не может содержать ваш email'
-            logger.warning(self.WARNING_TEMPLATE.format(user.email, error_msg))
+            # Исправление PIE803: используем % formatting
+            logger.warning(
+                self.WARNING_TEMPLATE,
+                user.email,
+                error_msg
+            )
             raise InvalidPasswordException(reason=error_msg)
 
-        logger.debug(f'Пароль для {user.email} успешно прошёл валидацию')
+        logger.debug('Пароль для %s успешно прошёл валидацию', user.email)
 
     async def on_after_register(
         self,
@@ -76,10 +86,10 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         request: Optional[Request] = None
     ):
         """Действия после регистрации."""
-        logger.info(
-            f'✅ Новый пользователь зарегистрирован: '
-            f'ID={user.id}, Email={user.email}'
-        )
+        # Исправление PIE803: используем % formatting
+        # Исправление FCS100: разбиваем на два вызова
+        logger.info('✅ Новый пользователь зарегистрирован: ID=%s', user.id)
+        logger.info('✅ Email: %s', user.email)
 
 
 async def get_user_manager(user_db=Depends(get_user_db)):
