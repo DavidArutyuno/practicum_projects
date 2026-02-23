@@ -52,16 +52,13 @@ def get_logger(name: str, level: Optional[int] = None) -> logging.Logger:
     else:
         logger.setLevel(logging.INFO)
 
-    # Добавляем фильтр, если его ещё нет
     if not any(isinstance(f, CustomFilter) for f in logger.filters):
         logger.addFilter(CustomFilter())
 
-    # Добавляем обработчик, если его ещё нет
     if not logger.handlers:
         logger.addHandler(get_console_handler())
 
     return logger
 
 
-# Создаём основной логгер приложения
 logger = get_logger(__name__)

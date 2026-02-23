@@ -62,7 +62,6 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
                 f'Пароль должен содержать не менее {MIN_PASSWORD_LENGTH} '
                 f'символов (сейчас {password_length})'
             )
-            # Исправление PIE803: используем % formatting
             logger.warning(
                 self.WARNING_TEMPLATE,
                 user.email,
@@ -72,7 +71,6 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
 
         if user.email in password:
             error_msg = 'Пароль не может содержать ваш email'
-            # Исправление PIE803: используем % formatting
             logger.warning(
                 self.WARNING_TEMPLATE,
                 user.email,
@@ -88,8 +86,6 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         request: Optional[Request] = None
     ):
         """Действия после регистрации."""
-        # Исправление PIE803: используем % formatting
-        # Исправление FCS100: разбиваем на два вызова
         logger.info('✅ Новый пользователь зарегистрирован: ID=%s', user.id)
         logger.info('✅ Email: %s', user.email)
 

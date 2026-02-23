@@ -34,14 +34,11 @@ async def create_user(
                             is_superuser=is_superuser
                         )
                     )
-                    # Исправление PIE803:
-                    # используем % formatting вместо f-string
                     logger.info(
                         '✅ Успешно создан суперпользователь с email: %s',
                         email
                     )
     except UserAlreadyExists:
-        # Исправление PIE803: используем % formatting вместо f-string
         logger.info(
             'ℹ️ Суперпользователь с email %s уже существует в БД',
             email
@@ -49,8 +46,6 @@ async def create_user(
         return None
 
     except Exception as e:
-        # Исправление PIE803: используем % formatting вместо f-string
-        # Исправление FCS100: разбиваем сложный f-string
         logger.error(
             '❌ Ошибка создания суперпользователя с email %s: %s',
             email,
