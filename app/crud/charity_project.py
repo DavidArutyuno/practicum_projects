@@ -32,5 +32,23 @@ class CRUDCharityProject(CRUDBase):
         )
         return open_projects.scalars().all()
 
+    async def get_projects_by_completion_rate(
+        self,
+        session: AsyncSession,
+    ) -> list[CharityProject]:
+        """
+        Возвращает закрытые проекты, отсортированные по времени сбора.
+        """
+        result = await session.execute(
+            select(
+                CharityProject.name,
+                CharityProject.days_to_complete,
+                CharityProject.description
+            )
+            .where(CharityProject.fully_invested.is_(True))
+            .order_by(CharityProject.days_to_complete.asc())
+        )
+        return result.scalars().all()
+
 
 charity_project_crud = CRUDCharityProject(CharityProject)

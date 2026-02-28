@@ -33,6 +33,10 @@ async def close_if_complete(obj):
     if obj.invested_amount >= obj.full_amount and not obj.fully_invested:
         obj.fully_invested = True
         obj.close_date = datetime.now()
+
+        if hasattr(obj, 'days_to_complete'):
+            delta = obj.close_date - obj.create_date
+            obj.days_to_complete = delta.days
         return True
     return False
 
