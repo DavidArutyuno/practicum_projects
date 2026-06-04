@@ -1,0 +1,50 @@
+# Файл docker-compose.yml
+# version: '3.8'
+
+# Перечень volume
+volumes:
+  pg_data_foodgram:
+  static_volume_foodgram:
+  media_volume_foodgram:
+
+# Перечень контейнеров
+services:
+  # Имя и описание первого контейнера; имя выбирает разработчик. 
+  # Это контейнер БД
+  db:
+    # Из какого образа запустить контейнер:
+    image: postgres:13.10
+    # Файл (или список файлов) с переменными окружения
+    env_file: .env
+    # Какой volume подключить для этого контейнера
+    volumes:
+      - pg_data_foodgram:/var/lib/postgresql/data
+  # Имя и описание контейнера с бэкендом
+  backend:
+    # Из какого Dockerfile собирать образ для этого контейнера:
+    build: ./backend/
+    env_file: .env
+    volumes:
+      - static_volume_foodgram:/backend_static
+      - media_volume_foodgram:/app/media
+    # Какие контейнеры нужно запустить до старта этого контейнера:
+    depends_on:
+      - db
+  # Имя третьего контейнера. Это контейнер с фронтендом
+  frontend:
+    build: ./frontend/
+    env_file: .env
+    command: cp -r /app/build/. /frontend_static/
+    volumes:
+      - static_volume_foodgram:/frontend_static
+  nginx:
+    build: ./nginx/
+    env_file: .env
+    ports:
+      - 8000:80
+    volumes:
+      - static_volume_foodgram:/staticfiles
+      - media_volume_foodgram:/app/media
+    depends_on:
+      - backend
+      - frontend
