@@ -1,0 +1,5 @@
+IP:89.169.175.171;
+name_taski:https://taski777.hopto.org;
+name_kittygram:https://kittygram777.ru;
+login:yc-user;
+password:KavJYzxN2K82u-HA;
